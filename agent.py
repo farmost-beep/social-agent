@@ -81,8 +81,12 @@ def build_evening():
     if timeline:
         lines.append(f"今天记录了 {len(timeline)} 条互动：")
         for r in timeline[:5]:
-            c = get_contact(r["contact"])
-            name = c["name"] if c else r["contact"]
+            contact_id = r.get("contact") or r.get("contact_group", "")
+            if not contact_id:
+                lines.append(f"  · {r['summary'][:40]}")
+                continue
+            c = get_contact(contact_id)
+            name = c["name"] if c else contact_id
             lines.append(f"  · {name}: {r['summary'][:40]}")
     else:
         lines.append("今天没有记录新互动。")
