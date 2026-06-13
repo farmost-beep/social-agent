@@ -1,47 +1,116 @@
 # 社交关系AI管家
 
 > 一个比你更记得住人情世故的AI管家。
+>
+> 让联系人面前，你永远像做过功课——而且什么额外的事都不用做。
 
-让创业者在投资人、合伙人、客户面前，永远像做过功课——而且什么额外的事都不用做。
+## 数据
 
-## 快速开始
+- **联系人：** 含自己及所有社交关系
+- **微信联系方式：** 大部分已关联
+- **预置别名：** 肖哥→肖庆民、阿呆→赵占祥、Alex→刘博蹇等
+- **关系图谱：** `data/relationship_graph.png`（可视化网络图）
+
+所有数据存储在 `data/` 目录下，JSON格式，**本地存储不上云**。
+
+## 使用方式
+
+### 方式一：微信里跟机器人聊（推荐）
+
+桥接守护进程在后台运行，直接在微信里发消息：
+
+| 你说 | 它做 |
+|:----|:-----|
+| `记一下：和赖凯聊了合作` | 记录互动，自动提取待办 |
+| `赖凯最近咋样` | 查最近互动记录 |
+| `最近该联系谁` | 列出14天+未联系的冷关系 |
+| `最近有啥待办` | 列出待办事项 |
+| `多少联系人` | 返回联系人实时统计 |
+| `给邵哥发消息` | 拟稿并推送（有微信ID则直发） |
+| `肖哥是肖庆民` | 设别名，以后说"肖哥"也能找到 |
+| `邵哥的微信ID是xxx` | 存微信ID，以后可直发对方微信 |
+
+### 方式二：本对话直接用
+
+直接说上述指令，AI 会读取本地 JSON 返回实时数据，不靠记忆猜测。
+
+### 方式三：命令行
 
 ```bash
-# 添加联系人
-python3 social.py add-contact zhangzong --name 张总 --role 投资人 --tags AI赛道 A轮
+# 进入 skill 目录
+cd ~/.claude/skills/social-agent
 
-# 记录互动（自动提取待办）
-python3 social.py log zhangzong --summary "TS条款沟通，法务审核中" --type meeting
-
-# 查看待办
-python3 social.py todos
-
-# AI拟稿
-python3 social.py draft zhangzong --tone 亲切
-
-# 拟稿并发送到微信
-python3 social.py send zhangzong --tone 亲切
-
-# 查看所有联系人的最近状态
+# 查看所有联系人
 python3 social.py status
-
-# 查看某个联系人详情
-python3 social.py status zhangzong
 
 # 仪表盘
 python3 social.py dashboard
 
-# 检查需跟进的关系
-python3 social.py check
+# 查看待办
+python3 social.py todos
+
+# 自然语言交互（AI 智能理解）
+python3 agent.py --chat "消息"
+
+# 早间推送
+python3 agent.py --morning
+
+# 午后建议联系
+python3 agent.py --afternoon
+
+# 晚间回顾
+python3 agent.py --evening
 ```
+
+## 自动化功能
+
+| 时段 | 内容 | 说明 |
+|:---|:-----|:-----|
+| ☀️ 09:00 | 早间概览 | 今日待办 + 冷却关系提醒 |
+| 💡 14:00 | 午后建议 | 列出14天+未联系的冷关系 |
+| 🌙 21:00 | 晚间回顾 | 今日互动总结 + 待办状态 |
+| ⏰ 每30分钟 | 紧急提醒 | 超期待办自动推送 |
+
+## 高级功能
+
+### 别名系统
+
+不用记全名，随时设别名：
+
+```
+肖哥是肖庆民
+→ 以后说"肖哥"就能找到肖庆民
+```
+
+已预置14个常用别名（来自微信昵称映射）。
+
+### 微信直发
+
+存好联系人的内部微信ID后，消息直接发到对方微信：
+
+```
+邵哥的微信ID是o9cq80yA9s4SlCPQNAYivVNJMD50@im.wechat
+→ 以后"给邵哥发消息"直接推送到邵建华微信
+```
+
+（内部ID需对方给机器人发过消息后从日志提取）
+
+### 关系图谱
+
+```
+python3 generate_graph.py
+→ 生成 data/relationship_graph.png
+```
+
+可视化所有联系人按关系分类（同行/校友/创业/同门），节点大小代表关系强度。
 
 ## 命令一览
 
 | 命令 | 说明 |
 |:----|:-----|
-| `add-contact` | 添加联系人（投资人/合伙人/客户/导师）|
+| `add-contact` | 添加联系人 |
 | `log` | 记录互动，自动提取待办 |
-| `todos` | 查看待办列表（P0优先）|
+| `todos` | 查看待办列表 |
 | `done` | 完成待办 |
 | `draft` | AI拟稿，支持语气调节 |
 | `send` | 拟稿并推送到微信 |
@@ -49,18 +118,19 @@ python3 social.py check
 | `dashboard` | 全局仪表盘 |
 | `check` | 检查14天+未联系的关系 |
 
-## 数据
-
-所有数据存储在 `data/` 目录下，JSON格式，本地存储不上云。
+## 数据文件
 
 | 文件 | 说明 |
 |:----|:-----|
-| `contacts.json` | 联系人库 |
-| `timeline.json` | 互动时间线 |
-| `todos.json` | 待办队列 |
+| `data/contacts.json` | 联系人库 |
+| `data/timeline.json` | 互动时间线 |
+| `data/todos.json` | 待办队列 |
+| `data/wechat_ids.json` | 微信内部ID映射 |
+| `data/relationship_graph.png` | 关系图谱 |
 
 ## 依赖
 
-- Claude Code（用于AI拟稿）
+- Claude Code（AI拟稿引擎）
 - Python 3.9+
-- 微信推送（可选，需配置 wechat_push.py）
+- 微信推送：wechat-claude-code 桥接（可选）
+- 关系图谱：matplotlib + networkx（可选）
