@@ -126,7 +126,7 @@ print(f"待导入新联系人: {len(new_contacts_raw)}人")
 
 # ---------- 5. 分类和富化 ----------
 # 同门关键词
-TONG_MEN_KEYWORDS = ['9系', '09', '精密机械', '九系']
+TONG_MEN_KEYWORDS = ['9系', '精密机械', '九系']
 # 金融行业关键词
 FINANCE_KEYWORDS = ['银行', '证券', '基金', '保险', '金融', '投资', '理财',
                      '信托', '期货', '量化', '资本', '资产', '财富', '股',
@@ -142,9 +142,10 @@ def classify_contact(c):
     grade = c.get('grade', '')
     text = f"{dept} {company} {grade}"
 
-    # 1. 先检查是否同门
+    # 1. 先检查是否同门（仅限dept/company含九系/9系，排除grade字段以免误匹配入学年份）
+    dept_company_text = f"{dept} {company}"
     for kw in TONG_MEN_KEYWORDS:
-        if kw in text or kw in company:
+        if kw in dept_company_text or kw in company:
             return {
                 'relation': '同门',
                 'sub_relation': '九系/精密机械',
