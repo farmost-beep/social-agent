@@ -1,7 +1,9 @@
-# 数据文件 — 含隐私信息，不要提交到公开仓库
-data/
+# 数据文件 — 含隐私信息，本地跟踪但不推送到公开仓库
+# data/ 已被 git 跟踪，由 pre-push hook 阻止推送到 origin
 config/config.local.yaml
 *.json
+!data/**/*.json
+!data_local/**/*.json
 !package.json
 !package-lock.json
 !tsconfig.json
