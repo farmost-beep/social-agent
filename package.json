@@ -1,0 +1,21 @@
+{
+  "name": "social-agent",
+  "version": "2.3.0",
+  "description": "社交关系AI管家 - Claude Code Skill。自动追踪社交关系，帮你拟消息、记待办、维护人脉。",
+  "author": "Contributors",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/farmost-beep/social-agent.git"
+  },
+  "keywords": ["claude-code", "claude-code-skill", "social", "wechat", "ai"],
+  "bin": {
+    "social-agent": "./bin/cli.js"
+  },
+  "scripts": {
+    "postinstall": "node ./bin/postinstall.js"
+  },
+  "engines": {
+    "node": ">=16"
+  }
+}

@@ -20,7 +20,15 @@
 
 ## 🚀 快速开始
 
-### 一键安装
+### npm 安装（推荐）
+
+```bash
+npx social-agent dashboard
+```
+
+首次运行自动安装 Python 依赖和初始化数据。
+
+### 一键脚本安装
 
 ```bash
 bash <(curl -sL https://raw.githubusercontent.com/farmost-beep/social-agent/main/install.sh)
