@@ -3,7 +3,7 @@
 > 一个本地运行的AI管家，自动追踪所有社交关系中「最近干了什么」和「下一步该干什么」。
 > 一个比你更记得住人情世故的AI管家。
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 ## ✨ 功能
 
