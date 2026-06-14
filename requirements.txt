@@ -1,19 +1,8 @@
-# 社交关系AI管家
-# 核心依赖
+# 社交关系AI管家 · 最小依赖
 # Python 3.9+
 
-# AI拟稿
-# claude CLI 需单独安装（Claude Code）
-
-# 图像识别（群聊截图分析）
-easyocr>=1.7
-
-# 基础
+# 核心引擎
 pyyaml>=6.0
 
-# Web界面（可选）
-flask>=2.0
-
-# PDF导出（可选）
-reportlab>=4.0
-markdown>=3.0
+# Web界面（仅运行 web.py 时需要）
+# flask>=2.0
