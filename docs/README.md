@@ -19,6 +19,14 @@
 
 ## 🚀 快速开始
 
+### 一键安装
+
+```bash
+bash <(curl -sL https://raw.githubusercontent.com/farmost-beep/social-agent/main/install.sh)
+```
+
+### 手动安装
+
 ```bash
 # 1. 克隆到 Claude Code skills 目录
 cd ~/.claude/skills
