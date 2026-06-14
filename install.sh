@@ -52,13 +52,18 @@ pip3 install -r requirements.txt --quiet 2>/dev/null
 pip3 install -e . --quiet 2>/dev/null
 ok "依赖安装完成"
 
-# ── 初始化数据 ────────────────────────────────────────────────
-if [ ! -f "data/contacts.json" ]; then
+# ── 初始化数据（安全模式） ────────────────────────────────────
+# ⚠ 绝不覆盖已有数据文件
+if [ -f "data/contacts.json" ] && [ "$(wc -c < data/contacts.json)" -gt 2 ]; then
+  ok "检测到已有数据（$(wc -c < data/contacts.json)字节），跳过初始化"
+elif [ -f "data/contacts.json" ]; then
+  # 文件存在但为空，可能是空模板覆盖了数据，不覆盖
+  warn "contacts.json 存在但为空，跳过初始化以避免覆盖已有数据"
+  warn "如需重置，请手动删除 data/ 下文件后重试"
+else
   info "初始化空数据..."
   cp -r data_template/* data/
   ok "数据初始化完成（空模板）"
-else
-  ok "数据目录已存在，跳过初始化"
 fi
 
 # ── 验证 ──────────────────────────────────────────────────────

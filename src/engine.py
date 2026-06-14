@@ -31,6 +31,13 @@ def _load(path):
         return json.load(f)
 
 def _save(path, data):
+    """安全写入：防止空数据覆盖已有内容。"""
+    # 检查：如果新数据为空且文件已有内容，拒绝写入
+    if isinstance(data, (list, dict)) and len(data) == 0:
+        if path.exists() and path.stat().st_size > 2:
+            import warnings
+            warnings.warn(f"⚠ 安全机制：拒绝空数据覆盖 {path.name}（已有 {path.stat().st_size} 字节数据）")
+            return
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
