@@ -19,9 +19,9 @@
   social.py check                                                                        检查需跟进的提醒
 """
 import sys, argparse
-from lib.engine import *
-from lib.ai import draft_message, generate_reminder
-from lib.push import push_to_wechat, send_message
+from engine import *
+from ai import draft_message, generate_reminder
+from push import push_to_wechat, send_message
 
 def cmd_dashboard(args):
     d = get_dashboard()

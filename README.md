@@ -41,25 +41,25 @@
 cd ~/.claude/skills/social-agent
 
 # 查看所有联系人
-python3 social.py status
+python3 src/social.py status
 
 # 仪表盘
-python3 social.py dashboard
+python3 src/social.py dashboard
 
 # 查看待办
-python3 social.py todos
+python3 src/social.py todos
 
 # 自然语言交互（AI 智能理解）
-python3 agent.py --chat "消息"
+python3 src/agent.py --chat "消息"
 
 # 早间推送
-python3 agent.py --morning
+python3 src/agent.py --morning
 
 # 午后建议联系
-python3 agent.py --afternoon
+python3 src/agent.py --afternoon
 
 # 晚间回顾
-python3 agent.py --evening
+python3 src/agent.py --evening
 ```
 
 ## 自动化功能
@@ -97,12 +97,7 @@ python3 agent.py --evening
 
 ### 关系图谱
 
-```
-python3 generate_graph.py
-→ 生成 data/relationship_graph.png
-```
-
-可视化所有联系人按关系分类（同行/校友/创业/同门），节点大小代表关系强度。
+关系图谱可视化功能见 `backup_legacy/generate_graph.py`。
 
 ## 命令一览
 

@@ -2,9 +2,9 @@
 """社交关系AI管家 v3.0 Agent — 住在微信里的AI管家。
 
 运行模式：
-  python3 agent.py                  # 单次检查+推送
-  python3 agent.py --daemon         # 守护进程模式（每小时检查）
-  python3 agent.py --chat "消息"    # 处理一条用户消息
+  python3 src/agent.py                  # 单次检查+推送
+  python3 src/agent.py --daemon         # 守护进程模式（每小时检查）
+  python3 src/agent.py --chat "消息"    # 处理一条用户消息
 
 定时推送（cron）：
   09:00 今日概览
@@ -16,8 +16,8 @@ from datetime import datetime, date
 from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(__file__))
-from lib.engine import *
-from lib.push import push_to_wechat
+from engine import *
+from push import push_to_wechat
 from intent import process_message
 
 

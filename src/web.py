@@ -3,8 +3,8 @@
 from flask import Flask, render_template_string, request, redirect, url_for, jsonify
 import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
-import lib.engine as engine
-from lib.ai import draft_message
+import engine as engine
+from ai import draft_message
 
 app = Flask(__name__)
 

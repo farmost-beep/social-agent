@@ -2,9 +2,9 @@
 import re, subprocess, json
 from datetime import date, datetime
 from pathlib import Path
-from lib.engine import *
-from lib.ai import draft_message
-from lib.push import push_to_wechat, send_message, set_wechat_id, get_wechat_id
+from engine import *
+from ai import draft_message
+from push import push_to_wechat, send_message, set_wechat_id, get_wechat_id
 
 CONTACTS_FILE = Path(__file__).resolve().parent / "data" / "contacts.json"
 
