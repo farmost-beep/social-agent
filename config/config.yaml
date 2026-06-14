@@ -20,8 +20,8 @@ ai:
 # 微信推送配置（可选）
 push:
   enabled: false
-  channel: "wxpusher"         # 可选: wxpusher, cc-connect
-  app_token_env: "WX_PUSHER_TOKEN"
+  channel: "cc-connect"
+  
 
 # 用户角色模板路径（可选）
 roles_template: "./config/roles.yaml"

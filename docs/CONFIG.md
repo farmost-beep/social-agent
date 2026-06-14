@@ -28,7 +28,6 @@ roles_template: "./config/roles.yaml"
 |:----|:----:|:----|
 | `ANTHROPIC_API_KEY` | ✅ (使用Claude时) | Anthropic API密钥 |
 | `OPENAI_API_KEY` | ✅ (使用OpenAI时) | OpenAI API密钥 |
-| `WX_PUSHER_TOKEN` | ❌ (推送时) | WxPusher推送token |
 
 ## 数据目录
 
@@ -66,16 +65,10 @@ ai:
 
 ## 微信推送配置
 
-### WxPusher
-1. 注册 [WxPusher](https://wxpusher.zjiecode.com/)
-2. 获取 AppToken
-3. 设置环境变量 `WX_PUSHER_TOKEN`
-4. 配置文件中启用
-
-### cc-connect
+### cc-connect（默认）
 ```yaml
 push:
   enabled: true
   channel: "cc-connect"
 ```
-需额外安装 `cc-connect` 并配置本地 Webhook。
+需安装 `cc-connect` 并配置本地 Webhook。
