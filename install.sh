@@ -90,7 +90,7 @@ echo -e "    python3 src/social.py add-contact <ID> --name '姓名' --role '角�
 echo -e "    python3 src/social.py dashboard"
 echo ""
 echo -e "  ${YELLOW}文档:${NC}"
-echo -e "    docs/README.md — 使用说明"
+echo -e "    README.md      — 使用说明"
 echo -e "    docs/SPEC.md   — 设计规约"
 echo ""
 echo -e "  ${YELLOW}更新:${NC}"
