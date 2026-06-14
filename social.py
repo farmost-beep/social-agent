@@ -2,15 +2,21 @@
 """社交关系AI管家 — 一个比你更记得住人情世故的AI管家。
 
 用法:
-  social.py add-contact <id> <name> --role <角色>   添加联系人
-  social.py log <contact> <摘要>                     记录互动
-  social.py todos [--priority P0]                    查看待办
-  social.py done <todo-id>                           完成待办
-  social.py draft <contact> [--tone 亲切]            AI拟稿
-  social.py send <contact> [--tone 亲切]             拟稿并发送
-  social.py status [<contact>]                       查看状态/时间线
-  social.py dashboard                                仪表盘
-  social.py check                                    检查需跟进的提醒
+  social.py add-contact <ID> [--name NAME] [--role ROLE] [--tags TAGS] [--notes NOTES]  添加联系人
+  social.py edit-contact <ID> [--name NAME] [--role ROLE] [--tags TAGS] [--notes NOTES]  编辑联系人
+  social.py search <QUERY> [--field name|tags|notes]                                     搜索联系人
+  social.py note <CONTACT> <CONTENT> [--tags TAGS]                                       添加记忆备注
+  social.py adjust [--apply]                                                            分析/执行强度调整建议
+  social.py adjust [--apply]                                                            分析/执行强度调整建议
+  social.py birthdays [--days 30]                                                        查看近期生日
+  social.py log <CONTACT> <摘要>                                                         记录互动
+  social.py todos [--priority P0]                                                        查看待办
+  social.py done <todo-id>                                                               完成待办
+  social.py draft <CONTACT> [--tone 亲切]                                                 AI拟稿
+  social.py send <CONTACT> [--tone 亲切]                                                  拟稿并发送
+  social.py status [<contact>]                                                           查看状态/时间线
+  social.py dashboard                                                                    仪表盘
+  social.py check                                                                        检查需跟进的提醒
 """
 import sys, argparse
 from lib.engine import *
@@ -74,7 +80,11 @@ def main():
     if len(sys.argv) < 2:
         print("社交关系AI管家 — 一个比你更记得住人情世故的AI管家\n")
         print("用法:")
-        print("  social.py add-contact <ID> --name NAME --role ROLE")
+        print("  social.py add-contact <ID> [--name NAME] [--role ROLE] [--tags TAGS] [--notes NOTES]")
+        print("  social.py edit-contact <ID> [--name NAME] [--role ROLE] [--tags TAGS] [--notes NOTES]")
+        print("  social.py search <QUERY> [--field name|tags|notes]")
+        print("  social.py note <CONTACT> <CONTENT> [--tags TAGS]")
+        print("  social.py birthdays [--days 30]")
         print("  social.py log <CONTACT> <SUMMARY>")
         print("  social.py todos [--priority P0]")
         print("  social.py done <TODO_ID>")
@@ -90,7 +100,7 @@ def main():
 
     if cmd == "add-contact":
         if len(args) < 1:
-            print("用法: social.py add-contact <ID> --name NAME --role ROLE")
+            print("用法: social.py add-contact <ID> [--name NAME] [--role ROLE] [--tags TAGS] [--notes NOTES]")
             return 1
         contact_id = args[0]
         opts = _parse_opts(args[1:], ["--name", "--role", "--tags", "--notes"])
@@ -101,6 +111,114 @@ def main():
         ok, msg = add_contact(contact_id, name, role, tags, None, notes)
         print(msg)
         return 0 if ok else 1
+
+    elif cmd == "edit-contact":
+        if len(args) < 1:
+            print("用法: social.py edit-contact <ID> [--name NAME] [--role ROLE] [--tags TAGS] [--notes NOTES]")
+            return 1
+        contact_id = args[0]
+        opts = _parse_opts(args[1:], ["--name", "--role", "--sub-relation", "--strength", "--tags", "--notes", "--stage"])
+        updates = {}
+        if "--name" in opts:
+            updates["name"] = opts["--name"]
+        if "--role" in opts:
+            updates["role"] = opts["--role"]
+        if "--sub-relation" in opts:
+            updates["sub_relation"] = opts["--sub-relation"]
+        if "--strength" in opts:
+            try:
+                updates["strength"] = int(opts["--strength"])
+            except:
+                pass
+        if "--tags" in opts:
+            updates["tags"] = opts["--tags"]
+        if "--notes" in opts:
+            updates["notes"] = opts["--notes"]
+        if "--stage" in opts:
+            updates["stage"] = opts["--stage"]
+        if not updates:
+            print("未指定任何修改字段")
+            return 1
+        ok, msg = update_contact(contact_id, updates)
+        print(msg)
+        return 0 if ok else 1
+
+    elif cmd == "search":
+        if not args:
+            print("用法: social.py search <QUERY> [--field name|tags|notes]")
+            return 1
+        query = args[0]
+        opts = _parse_opts(args[1:], ["--field"])
+        field = opts.get("--field")
+        results = search_contacts(query, field)
+        if not results:
+            print(f"未找到匹配 '{query}' 的联系人")
+            return 0
+        print(f"\n🔍 搜索 '{query}' 找到 {len(results)} 个结果:\n")
+        for c in results[:20]:
+            tags_str = ", ".join(c.get("tags", [])[:3])
+            note_preview = c.get("notes", "")[:40]
+            bd = extract_birthday(c.get("notes", ""))
+            bd_str = f" 🎂{bd[0]}月{bd[1]}日" if bd else ""
+            print(f"  {c['name']:10s} [{c.get('role','?')}]  {tags_str}{bd_str}")
+            if note_preview:
+                print(f"    📝 {note_preview}")
+        if len(results) > 20:
+            print(f"\n  ...还有 {len(results)-20} 个结果")
+        return 0
+
+    elif cmd == "note":
+        if len(args) < 2:
+            print("用法: social.py note <CONTACT> <CONTENT> [--tags TAGS]")
+            return 1
+        contact_id = args[0]
+        opts = _parse_opts(args[1:], ["--tags"])
+        content_parts = [a for a in args[1:] if not a.startswith("--")]
+        content = " ".join(content_parts)
+        tags = opts.get("--tags", "").split() if opts.get("--tags") else []
+        ok, msg = add_memory(contact_id, content, tags)
+        print(msg)
+        # Also update contact strength +1 if currently low
+        contact = get_contact(contact_id)
+        if contact and contact.get("strength", 3) < 5:
+            new_s = min(contact["strength"] + 1, 5)
+            update_contact(contact_id, {"strength": new_s})
+        return 0 if ok else 1
+
+    elif cmd == "birthdays":
+        opts = _parse_opts(args, ["--days"])
+        days = int(opts.get("--days", "30"))
+        results = get_birthdays(days)
+        if not results:
+            print(f"未来{days}天内没有生日提醒 ✅")
+            return 0
+        print(f"\n🎂 近期生日 ({len(results)}个):\n")
+        for r in results:
+            flag = "🔴" if r["days_left"] == 0 else "🟡" if r["days_left"] <= 7 else "🟢"
+            print(f"  {flag} {r['contact']:10s} {r['birthday']:6s} 还有{r['days_left']}天")
+
+        return 0
+
+    elif cmd == "adjust":
+        apply_flag = "--apply" in sys.argv
+        suggestions = auto_adjust_strength()
+        if not suggestions:
+            print("✅ 当前无需自动调整，所有关系强度合理")
+            return 0
+        print(f"\n📊 强度自动调整建议 ({len(suggestions)}条):\n")
+        for sug in suggestions:
+            arrow = "⬆️" if sug["suggested"] > sug["current"] else "⬇️"
+            print(f"  {arrow} {sug['name']:12s} {sug['current']}->{sug['suggested']}  {sug['reason']}")
+        if apply_flag:
+            applied = 0
+            for sug in suggestions:
+                ok, msg = apply_adjustment(sug["contact_id"], sug["suggested"])
+                if ok:
+                    applied += 1
+            print(f"\n✅ 已执行 {applied}/{len(suggestions)} 条调整")
+        else:
+            print(f"\n💡 确认执行请加 --apply: social.py adjust --apply")
+        return 0
 
     elif cmd == "log":
         if len(args) < 2:
@@ -190,8 +308,33 @@ def main():
             print(f"\n{'='*40}")
             print(f"  {c['name']} ({c.get('role','?')})")
             print(f"{'='*40}")
-            print(f"  阶段: {c.get('stage','-')}")
+            tags_str = ", ".join(c.get("tags", []))
+            if tags_str:
+                print(f"  标签: {tags_str}")
             print(f"  强度: {c.get('strength',3)}/5")
+            print(f"  阶段: {c.get('stage','-')}")
+            if c.get("platforms"):
+                wx = c["platforms"].get("weixin", "")
+                phone = c["platforms"].get("phone", "")
+                if wx:
+                    print(f"  微信: {wx[:20]}{'...' if len(wx)>20 else ''}")
+                if phone:
+                    print(f"  电话: {phone}")
+            # 显示记忆备注
+            memories = c.get("memories", [])
+            if memories:
+                print(f"  记忆 ({len(memories)}条):")
+                for m in memories[-3:]:
+                    print(f"    💭 {m.get('content','')[:60]}")
+                    if m.get("tags"):
+                        print(f"      标签: {', '.join(m['tags'])}")
+            # 显示重要日期
+            important_dates = c.get("important_dates", [])
+            if important_dates:
+                print(f"  重要日期:")
+                for d_entry in important_dates:
+                    print(f"    📅 {d_entry.get('type','')}: {d_entry.get('date','')}")
+            # 显示最近互动
             records = list_timeline(contact=args[0], days=90)
             if records:
                 print(f"  最近互动 ({len(records)}条):")
@@ -201,13 +344,24 @@ def main():
                         print(f"      -> {r['pending']}")
             else:
                 print("  暂无互动记录")
+            # 显示待办
+            todos = list_todos()
+            contact_todos = [t for t in todos if t.get("contact") == args[0] and t.get("status") == "pending"]
+            if contact_todos:
+                print(f"  待办:")
+                for t in contact_todos[:3]:
+                    print(f"    [{t['priority']}] {t['task']} (截止{t.get('due','?')})")
         else:
             contacts = list_contacts()
             print(f"\n联系人 ({len(contacts)}人)")
             for c in contacts:
                 records = list_timeline(contact=c["id"], days=30)
                 last = records[0]["date"] if records else "从未"
-                print(f"  {c['name']:8s} {c.get('role','?'):6s} 最近:{last}")
+                bd = extract_birthday(c.get("notes", ""))
+                bd_str = f" 🎂{bd[0]}月{bd[1]}日" if bd else ""
+                memories_count = len(c.get("memories", []))
+                mem_str = f" 💭{memories_count}条" if memories_count else ""
+                print(f"  {c['name']:10s} {c.get('role','?'):6s} 最近:{last}{bd_str}{mem_str}")
         return 0
 
     elif cmd == "dashboard":
