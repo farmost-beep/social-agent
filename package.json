@@ -15,6 +15,16 @@
   "scripts": {
     "postinstall": "node ./bin/postinstall.js"
   },
+  "files": [
+    "bin/",
+    "src/",
+    "data_template/",
+    "docs/",
+    "config/",
+    "requirements.txt",
+    "README.md",
+    "LICENSE"
+  ],
   "engines": {
     "node": ">=16"
   }
