@@ -19,7 +19,7 @@ setup(
     },
     entry_points={
         "console_scripts": [
-            "social-agent=src.cli:main",
+            "social-agent=src.social:main",
         ],
     },
     python_requires=">=3.9",
