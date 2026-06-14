@@ -1,11 +1,11 @@
 # 数据文件 — 含隐私信息，不要提交到公开仓库
 data/
-data_template/
 config/config.local.yaml
 *.json
 !package.json
 !package-lock.json
 !tsconfig.json
+!data_template/*.json
 
 # 用户个人信息
 社交管家使用说明书.pdf

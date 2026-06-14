@@ -20,16 +20,21 @@
 ## 🚀 快速开始
 
 ```bash
-# 1. 安装依赖
+# 1. 克隆到 Claude Code skills 目录
+cd ~/.claude/skills
+git clone https://github.com/farmost-beep/social-agent.git
+cd social-agent
+
+# 2. 安装依赖
 pip install -r requirements.txt
 
-# 2. 初始化数据
+# 3. 初始化数据
 cp -r data_template/* data/
 
-# 3. 导入联系人
+# 4. 导入联系人
 python3 src/social.py add-contact <ID> --name "姓名" --role "角色"
 
-# 4. 查看仪表盘
+# 5. 查看仪表盘
 python3 src/social.py dashboard
 ```
 
