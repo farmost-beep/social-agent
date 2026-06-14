@@ -2,8 +2,8 @@
 """社交关系AI管家 — 一个比你更记得住人情世故的AI管家。
 
 用法:
-  social.py add-contact <ID> [--name NAME] [--role ROLE] [--tags TAGS] [--notes NOTES]  添加联系人
-  social.py edit-contact <ID> [--name NAME] [--role ROLE] [--tags TAGS] [--notes NOTES]  编辑联系人
+  social.py add-contact <ID> [--name NAME] [--role ROLE] [--sub-relation SUB] [--tags TAGS] [--notes NOTES]  添加联系人
+  social.py edit-contact <ID> [--name NAME] [--role ROLE] [--sub-relation SUB] [--strength N] [--tags TAGS] [--notes NOTES]  编辑联系人
   social.py search <QUERY> [--field name|tags|notes]                                     搜索联系人
   social.py note <CONTACT> <CONTENT> [--tags TAGS]                                       添加记忆备注
   social.py adjust [--apply]                                                            分析/执行强度调整建议
@@ -32,9 +32,11 @@ def cmd_dashboard(args):
     print(f"  各角色: {d['by_role']}")
     print(f"  待办: {d['pending_todos']}项 (超期{d['overdue_todos'].__len__()}项)")
     print(f"  近7天活动: {d['recent_activities']}条")
-    print(f"  冷却关系: {len(d['cold_relationships'])}个")
+    print(f"  冷却关系: 🔴{len(d['cold_relationships'])}个  🟡{len(d.get('warm_relationships',[]))}个")
     for c in d['cold_relationships']:
-        print(f"    ⚠️ {c['contact']} — {c['days']}天未联系")
+        print(f"    🔴 {c['contact']} — {c['days']}天未联系")
+    for c in d.get('warm_relationships', []):
+        print(f"    🟡 {c['contact']} — {c['days']}天未联系")
     print(f"{'='*40}\n")
     # Show top todos
     todos = list_todos()
@@ -100,15 +102,16 @@ def main():
 
     if cmd == "add-contact":
         if len(args) < 1:
-            print("用法: social.py add-contact <ID> [--name NAME] [--role ROLE] [--tags TAGS] [--notes NOTES]")
+            print("用法: social.py add-contact <ID> [--name NAME] [--role ROLE] [--sub-relation SUB] [--tags TAGS] [--notes NOTES]")
             return 1
         contact_id = args[0]
-        opts = _parse_opts(args[1:], ["--name", "--role", "--tags", "--notes"])
+        opts = _parse_opts(args[1:], ["--name", "--role", "--sub-relation", "--tags", "--notes"])
         name = opts.get("--name", contact_id)
         role = opts.get("--role", "其他")
+        sub_relation = opts.get("--sub-relation", "")
         tags = opts.get("--tags", "").split() if opts.get("--tags") else []
         notes = opts.get("--notes", "")
-        ok, msg = add_contact(contact_id, name, role, tags, None, notes)
+        ok, msg = add_contact(contact_id, name, role, tags, None, notes, sub_relation)
         print(msg)
         return 0 if ok else 1
 
@@ -370,9 +373,11 @@ def main():
         print(f"联系人: {d['total_contacts']}人 | 角色: {d['by_role']}")
         print(f"待办: {d['pending_todos']}项 (超期{len(d['overdue_todos'])}项)")
         print(f"近7天活动: {d['recent_activities']}条")
-        print(f"冷却关系: {len(d['cold_relationships'])}个")
+        print(f"冷却关系: 🔴{len(d['cold_relationships'])}个  🟡{len(d.get('warm_relationships',[]))}个")
         for c in d['cold_relationships']:
-            print(f"  {c['contact']} - {c['days']}天未联系")
+            print(f"  🔴 {c['contact']} - {c['days']}天未联系")
+        for c in d.get('warm_relationships', []):
+            print(f"  🟡 {c['contact']} - {c['days']}天未联系")
         todos = list_todos()
         if todos:
             print(f"\n优先待办:")

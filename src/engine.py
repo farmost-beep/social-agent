@@ -44,18 +44,23 @@ def list_contacts(role=None, tag=None):
         contacts = [c for c in contacts if tag in c.get("tags", [])]
     return contacts
 
-def add_contact(contact_id, name, role, tags=None, platforms=None, notes=""):
+def add_contact(contact_id, name, role, tags=None, platforms=None, notes="", sub_relation=""):
     contacts = _load(CONTACTS_FILE)
     if any(c["id"] == contact_id for c in contacts):
         return False, f"联系人 {contact_id} 已存在"
-    contacts.append({
-        "id": contact_id, "name": name, "role": role, "stage": "",
+    contact = {
+        "id": contact_id, "name": name,
+        "relation": role, "role": role,  # relation 是规范名，role 是向后兼容
+        "sub_relation": sub_relation,
+        "stage": "",
         "strength": 3, "tags": tags or [],
         "platforms": platforms or {}, "notes": notes,
         "memories": [],
         "important_dates": [],
         "created": date.today().isoformat(),
-    })
+    }
+    _apply_role_layers(contact)
+    contacts.append(contact)
     _save(CONTACTS_FILE, contacts)
     return True, f"已添加联系人: {name}"
 
@@ -67,15 +72,20 @@ def get_contact(contact_id):
     return None
 
 def update_contact(contact_id, updates):
-    """更新联系人指定字段。updates为dict，支持：name, role, sub_relation, strength, tags, notes, platforms, stage, full_name"""
+    """更新联系人指定字段。updates为dict，支持：name, role, relation, sub_relation, strength, tags, notes, platforms, stage, full_name"""
     contacts = _load(CONTACTS_FILE)
     for c in contacts:
         if c["id"] == contact_id:
             changed = []
             for key, val in updates.items():
-                if val is not None and key in ("name", "role", "sub_relation", "strength", "notes", "stage", "full_name"):
+                if val is not None and key in ("name", "role", "relation", "sub_relation", "strength", "notes", "stage", "full_name"):
                     c[key] = val
                     changed.append(key)
+                    # 同步 relation/role 保持一致性
+                    if key == "role" and "relation" not in updates:
+                        c["relation"] = val
+                    elif key == "relation" and "role" not in updates:
+                        c["role"] = val
                 elif val is not None and key == "tags":
                     if isinstance(val, str):
                         val = [t.strip() for t in val.split() if t.strip()]
@@ -85,9 +95,70 @@ def update_contact(contact_id, updates):
                     if isinstance(val, dict):
                         c["platforms"].update(val)
                         changed.append("platforms")
+            _apply_role_layers(c)
             _save(CONTACTS_FILE, contacts)
             return True, f"已更新 {contact_id}: {', '.join(changed)}"
     return False, f"未找到联系人: {contact_id}"
+
+# ── 角色互动层数 (SPEC 0.3) ──
+
+def _apply_role_layers(contact):
+    """计算联系人的角色互动层数，添加角色x1/x2/x3标签。
+
+    检测维度：职业层/校友层/组织层/社交层/合作层/家庭层
+    """
+    tags = set(t.lower() for t in contact.get("tags", []))
+    relation = contact.get("relation", contact.get("role", "")).lower()
+    sub = contact.get("sub_relation", "").lower()
+    notes = contact.get("notes", "").lower()
+
+    layers = []
+
+    # 职业层: 同行/同单位/同行业
+    if any(k in tags for k in ("同行",)) or relation in ("同行",) or relation in ("合作",):
+        layers.append("职层")
+    elif any(k in sub for k in ("银行", "金融", "科技", "保险", "证券", "审计", "邮储", "华瑞")):
+        layers.append("职层")
+
+    # 校友层
+    if "校友" in tags or relation == "校友":
+        layers.append("校层")
+
+    # 组织层: 同社团/协会
+    if any(k in tags for k in ("民建", "协会", "社团", "党派", "会员")) or "民建" in notes:
+        layers.append("组层")
+
+    # 社交层: 群友/群
+    if any(k in tags for k in ("群友", "群", "社交")):
+        layers.append("群层")
+
+    # 合作层: 创业/项目合作
+    if any(k in tags for k in ("创业", "合作", "项目")) or relation in ("创业", "合作"):
+        layers.append("合层")
+
+    # 家庭层
+    if relation == "family" or "家人" in tags or relation == "家人":
+        layers.append("家层")
+
+    # 去重并计算层数
+    unique_layers = list(dict.fromkeys(layers))
+    layer_count = len(unique_layers)
+
+    # 移除旧的角色x标签
+    new_tags = [t for t in contact.get("tags", []) if not t.startswith("角色x")]
+
+    # 添加新的角色x标签
+    if layer_count >= 3:
+        new_tags.append("角色x3")
+    elif layer_count == 2:
+        new_tags.append("角色x2")
+    elif layer_count == 1:
+        new_tags.append("角色x1")
+
+    contact["tags"] = new_tags
+    contact["_layers"] = unique_layers
+    return contact
+
 
 def search_contacts(query, field=None):
     """全文搜索联系人。field可为name/tags/notes，不传则搜全部。"""
@@ -340,15 +411,19 @@ def get_dashboard():
     today = date.today().isoformat()
     overdue = [t for t in todos if t.get("due", "") < today and t.get("status") == "pending"]
 
-    # Health check: relationships not contacted in 21+ days
-    cold = []
+    # Health check: relationships not contacted
+    timeline_all = _load(TIMELINE_FILE)
+    cold = []   # 21天+ 🔴
+    warm = []   # 14-20天 🟡
     for c in contacts:
-        last = max((r.get("date", "") for r in _load(TIMELINE_FILE)
+        last = max((r.get("date", "") for r in timeline_all
                     if r.get("contact") == c["id"]), default="")
         if last:
             days_since = (date.today() - date.fromisoformat(last)).days
             if days_since >= 21:
-                cold.append({"contact": c["name"], "days": days_since})
+                cold.append({"contact": c["name"], "days": days_since, "level": "🔴"})
+            elif days_since >= 14:
+                warm.append({"contact": c["name"], "days": days_since, "level": "🟡"})
 
     return {
         "total_contacts": len(contacts),
@@ -357,6 +432,7 @@ def get_dashboard():
         "overdue_todos": overdue,
         "recent_activities": len(timeline),
         "cold_relationships": cold,
+        "warm_relationships": warm,
     }
 
 # ── 自动强度调整 ──
