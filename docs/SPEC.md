@@ -226,8 +226,7 @@ social-agent/
 │   ├── web.py             # Web界面
 │   ├── engine.py          # 核心引擎
 │   ├── ai.py              # AI拟稿
-│   ├── push.py            # 微信推送
-│   └── cli.py             # 命令行入口（产品化版本）
+│   └── push.py            # 微信推送
 ├── data/
 │   ├── contacts.json      # 联系人库（用户自定义）
 │   ├── timeline.json      # 时间线

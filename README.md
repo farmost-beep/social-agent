@@ -174,7 +174,6 @@ social-agent/
 │   ├── engine.py          # 核心引擎
 │   ├── ai.py              # AI拟稿
 │   ├── push.py            # 推送模块
-│   ├── cli.py             # 产品化CLI
 │   └── web.py             # Web界面
 ├── data/                   # 用户数据（本地，不上云）
 ├── data_template/          # 空数据模板
