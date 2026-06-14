@@ -130,7 +130,7 @@ def add_memory(contact_id, content, tags=None):
             c["memories"].append(memory)
             _save(CONTACTS_FILE, contacts)
             # 轻度提升强度（不超过4），不碰5级家人
-            if c.get("strength", 3) < 4 and c.get("relation") != "family":
+            if c.get("strength", 3) < 4 and c.get("strength", 3) >= 1 and c.get("relation") != "family" and c.get("relation") != "self":
                 old_s = c["strength"]
                 c["strength"] = min(old_s + 1, 4)
                 _save(CONTACTS_FILE, contacts)
