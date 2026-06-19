@@ -60,7 +60,7 @@ def add_contact(contact_id, name, role, tags=None, platforms=None, notes="", sub
         "relation": role, "role": role,  # relation 是规范名，role 是向后兼容
         "sub_relation": sub_relation,
         "stage": "",
-        "strength": 3, "tags": tags or [],
+        "strength": 3, "tags": tags or [], "sub_relation": sub_relation or "",
         "platforms": platforms or {}, "notes": notes,
         "memories": [],
         "important_dates": [],
@@ -77,6 +77,62 @@ def get_contact(contact_id):
         if c["id"] == contact_id:
             return c
     return None
+
+def resolve_contact(query):
+    """通过ID/姓名/别名/模糊匹配解析联系人。
+
+    查找顺序：
+    1. 精确ID匹配
+    2. 精确姓名匹配
+    3. 别名匹配（alias字段）
+    4. 姓名包含匹配（模糊搜索）
+    5. 全字段模糊搜索（取最高分）
+
+    Returns: (contact, match_type) 或 (None, None)
+    """
+    contacts = _load(CONTACTS_FILE)
+    q = query.strip()
+    if not q:
+        return None, None
+
+    q_lower = q.lower()
+
+    # 1. 精确ID
+    for c in contacts:
+        if c["id"] == q:
+            return c, "id"
+
+    # 2. 精确姓名
+    for c in contacts:
+        if c.get("name", "").lower() == q_lower:
+            return c, "name"
+
+    # 3. 别名匹配
+    for c in contacts:
+        aliases = c.get("alias", [])
+        if isinstance(aliases, list):
+            for a in aliases:
+                if a.lower() == q_lower:
+                    return c, "alias"
+        elif isinstance(aliases, str) and aliases.lower() == q_lower:
+            return c, "alias"
+
+    # 4. 姓名包含（姓名以query开头或query包含在姓名中）
+    candidates = []
+    for c in contacts:
+        name = c.get("name", "").lower()
+        if name.startswith(q_lower) or q_lower in name:
+            candidates.append((c, len(name)))  # 短的优先
+    if candidates:
+        candidates.sort(key=lambda x: x[1])
+        return candidates[0][0], "fuzzy_name"
+
+    # 5. 全字段模糊搜索
+    results = search_contacts(q)
+    if results:
+        return results[0], "fuzzy"
+
+    return None, None
 
 def update_contact(contact_id, updates):
     """更新联系人指定字段。updates为dict，支持：name, role, relation, sub_relation, strength, tags, notes, platforms, stage, full_name"""
@@ -117,7 +173,11 @@ def _apply_role_layers(contact):
     tags = set(t.lower() for t in contact.get("tags", []))
     relation = contact.get("relation", contact.get("role", "")).lower()
     sub = contact.get("sub_relation", "").lower()
-    notes = contact.get("notes", "").lower()
+    raw_notes_cl = contact.get("notes")
+    if isinstance(raw_notes_cl, list):
+        notes = " ".join(raw_notes_cl).lower() if raw_notes_cl else ""
+    else:
+        notes = str(raw_notes_cl or "").lower()
 
     layers = []
 
@@ -182,7 +242,12 @@ def search_contacts(query, field=None):
             if any(q in t.lower() for t in c.get("tags", [])):
                 results.append(c)
         elif field == "notes":
-            if q in c.get("notes", "").lower():
+            raw_notes_s = c.get("notes")
+            if isinstance(raw_notes_s, list):
+                notes_text = " ".join(raw_notes_s) if raw_notes_s else ""
+            else:
+                notes_text = str(raw_notes_s or "")
+            if q in notes_text.lower():
                 results.append(c)
         elif field == "memories":
             if any(q in m.get("content", "").lower() for m in c.get("memories", [])):
@@ -196,7 +261,12 @@ def search_contacts(query, field=None):
                 score += 8
             if any(q in t.lower() for t in c.get("tags", [])):
                 score += 5
-            if q in c.get("notes", "").lower():
+            raw_notes = c.get("notes")
+            if isinstance(raw_notes, list):
+                notes_text = " ".join(raw_notes) if raw_notes else ""
+            else:
+                notes_text = str(raw_notes or "")
+            if q in notes_text.lower():
                 score += 3
             if any(q in m.get("content", "").lower() for m in c.get("memories", [])):
                 score += 3
@@ -258,7 +328,12 @@ def get_birthdays(days=30):
 
     for c in contacts:
         # 从notes中提取
-        bd = extract_birthday(c.get("notes", ""))
+        raw_notes_bd = c.get("notes")
+        if isinstance(raw_notes_bd, list):
+            notes_bd = " ".join(raw_notes_bd) if raw_notes_bd else ""
+        else:
+            notes_bd = str(raw_notes_bd or "")
+        bd = extract_birthday(notes_bd)
         # 从memories中提取
         if not bd:
             for m in c.get("memories", []):
@@ -286,7 +361,7 @@ def get_birthdays(days=30):
                         "id": c["id"],
                         "birthday": f"{month}月{day}日",
                         "days_left": delta,
-                        "age": today.year - 1964 if "1964" in c.get("notes", "") else None,
+                        "age": today.year - 1964 if "1964" in notes_bd else None,
                     })
             except ValueError:
                 pass
@@ -423,6 +498,9 @@ def get_dashboard():
     cold = []   # 21天+ 🔴
     warm = []   # 14-20天 🟡
     for c in contacts:
+        # 跳过自己
+        if c.get("relation") == "self" or c.get("id") == "陈颖芳":
+            continue
         last = max((r.get("date", "") for r in timeline_all
                     if r.get("contact") == c["id"]), default="")
         if last:
@@ -431,6 +509,9 @@ def get_dashboard():
                 cold.append({"contact": c["name"], "days": days_since, "level": "🔴"})
             elif days_since >= 14:
                 warm.append({"contact": c["name"], "days": days_since, "level": "🟡"})
+        else:
+            # 无任何时间线记录的，视为超长期冷却
+            cold.append({"contact": c["name"], "days": 999, "level": "🔴", "never_recorded": True})
 
     return {
         "total_contacts": len(contacts),
@@ -518,3 +599,105 @@ def auto_adjust_strength():
 def apply_adjustment(contact_id, new_strength):
     """执行一条强度调整建议。"""
     return update_contact(contact_id, {"strength": new_strength})
+
+
+# ── v2.5.0 批量画像补全 ──
+
+def _enrich_priority(contact):
+    """计算联系人画像补全优先级（分数越高越优先处理）。
+    
+    注意：外部调用处应在循环前过滤已处理联系人，本函数不负责版本过滤。
+    """
+    strength = contact.get("strength", 1)
+    relation = contact.get("relation", "") or contact.get("role", "")
+    raw_notes = contact.get("notes")
+    if isinstance(raw_notes, list):
+        notes = " ".join(raw_notes) if raw_notes else ""
+    else:
+        notes = str(raw_notes or "")
+    tags = contact.get("tags", []) or []
+    memories = contact.get("memories", []) or []
+
+    # 按信息密度从高到低排序
+    if strength >= 3 and not relation:
+        score = 100
+    elif notes.strip() and not relation:
+        score = 80
+    elif tags and not relation:
+        score = 60
+    elif memories and not relation:
+        score = 40
+    elif notes.strip() or tags or memories:
+        score = 20
+    else:
+        score = 10  # 仅有名称
+
+    # 强度加成：越重要的关系越优先补全
+    score += strength * 2
+    return score
+
+
+def get_enrichment_candidates(batch_size=10, force=False):
+    """获取下一批待画像补全的联系人，按优先级排序。
+
+    Args:
+        batch_size: 批次大小（默认10）
+        force: 是否重新处理已补全的联系人
+
+    Returns:
+        list[dict]: 联系人列表
+    """
+    contacts = _load(CONTACTS_FILE)
+    scored = []
+    for c in contacts:
+        version = c.get("_enrich_version", 0)
+        if version > 0 and not force:
+            continue
+        # 在 force 模式下仍给已处理联系人打分
+        if version > 0 and force:
+            score = _enrich_priority(c) + 1000  # 优先处理已有的（刷新）
+        else:
+            score = _enrich_priority(c)
+        if score > 0:
+            scored.append((score, c))
+    scored.sort(key=lambda x: -x[0])
+    return [c for _, c in scored[:batch_size]]
+
+
+def get_enrichment_stats():
+    """返回画像补全统计信息。"""
+    contacts = _load(CONTACTS_FILE)
+    enriched = [c for c in contacts if c.get("_enrich_version", 0) > 0]
+    pending = [c for c in contacts if c.get("_enrich_version", 0) == 0]
+
+    # 按 relation 统计已补全的
+    by_relation = {}
+    for c in enriched:
+        r = c.get("relation", c.get("role", "未知"))
+        by_relation[r] = by_relation.get(r, 0) + 1
+
+    # 待补全按强度分布
+    by_strength = {}
+    for c in pending:
+        s = c.get("strength", 0)
+        by_strength[s] = by_strength.get(s, 0) + 1
+
+    return {
+        "total": len(contacts),
+        "enriched": len(enriched),
+        "pending": len(pending),
+        "pending_pct": round(len(pending) / max(len(contacts), 1) * 100, 1),
+        "by_relation": by_relation,
+        "by_strength_pending": dict(sorted(by_strength.items())),
+    }
+
+
+def mark_enriched(contact_id):
+    """将联系人标记为已补全（_enrich_version += 1）。"""
+    contacts = _load(CONTACTS_FILE)
+    for c in contacts:
+        if c["id"] == contact_id:
+            c["_enrich_version"] = c.get("_enrich_version", 0) + 1
+            _save(CONTACTS_FILE, contacts)
+            return True
+    return False

@@ -21,28 +21,53 @@ from push import push_to_wechat
 from intent import process_message
 
 
+def _get_strength_by_name(name):
+    """通过姓名查联系人强度，查不到返回1。"""
+    from engine import resolve_contact
+    c, _ = resolve_contact(name)
+    return c.get("strength", 1) if c else 1
+
+
 def build_morning():
     """09:00 今日概览"""
     d = get_dashboard()
     lines = ["☀️ 今日概览\n"]
     todos = list_todos()
     if todos:
-        lines.append(f"待办 {len(todos)}项：")
+        lines.append(f"📋 待办 {len(todos)}项（显示前5项）：")
         for t in todos[:5]:
             c = get_contact(t["contact"])
             name = c["name"] if c else t["contact"]
             tag = "🔴" if t["priority"] == "P0" else "🟡"
-            lines.append(f"  {tag} {name} - {t['task']}")
+            task_short = t['task'][:35] + '…' if len(t['task']) > 35 else t['task']
+            lines.append(f"  {tag} {name} - {task_short}")
         lines.append("")
-    if d["cold_relationships"]:
-        lines.append(f"冷却关系 {len(d['cold_relationships'])}个：")
-        for c in d["cold_relationships"]:
-            lines.append(f"  {c['contact']} - {c['days']}天未联系")
+    # 冷却关系：只展示强度>=3的重要关系，其余只报总数
+    cold = d.get("cold_relationships", [])
+    warm = d.get("warm_relationships", [])
+    never_recorded = [c for c in cold if c.get("never_recorded")]
+    tracked_cold = [c for c in cold if not c.get("never_recorded")]
+    important_cold = [c for c in tracked_cold if _get_strength_by_name(c["contact"]) >= 3]
+    if cold:
+        lines.append(f"🧊 冷却关系：")
+        if never_recorded:
+            lines.append(f"  📝 无互动记录 {len(never_recorded)}人（需初始化时间线）")
+        if tracked_cold:
+            lines.append(f"  🔴 已冷却 {len(tracked_cold)}人（21天+）")
+            for c in important_cold[:5]:
+                lines.append(f"    {c['contact']} - {c['days']}天未联系")
+        if warm:
+            lines.append(f"  🟡 即将冷却 {len(warm)}人（14-20天）")
         lines.append("")
     if d["overdue_todos"]:
         lines.append(f"⚠️ 有 {len(d['overdue_todos'])} 项已超期")
-    if not todos and not d["cold_relationships"]:
-        lines.append("今日无事，安心赚钱。")
+        for t in d["overdue_todos"][:3]:
+            c = get_contact(t["contact"])
+            name = c["name"] if c else t["contact"]
+            lines.append(f"   {name} - {t['task'][:30]}")
+        lines.append("")
+    if not todos and not cold:
+        lines.append("今日有事，先忙赚钱。✅")
     return "\n".join(lines)
 
 

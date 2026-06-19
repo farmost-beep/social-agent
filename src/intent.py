@@ -281,7 +281,7 @@ def execute(action):
     elif act == "todos":
         todos = list_todos()
         if not todos:
-            return "没有待办，今日无事。"
+            return "没有待办，今日有事。"
         today = date.today().isoformat()
         reply = f"待办（{len(todos)}项）："
         for t in todos[:8]:

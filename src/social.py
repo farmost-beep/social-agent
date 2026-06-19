@@ -17,11 +17,13 @@
   social.py status [<contact>]                                                           查看状态/时间线
   social.py dashboard                                                                    仪表盘
   social.py check                                                                        检查需跟进的提醒
+  social.py enrich [--batch N] [--dry-run] [--force] [--stats] [--web]                      批量画像补全（P0，--web 启用网络信源）
 """
 import sys, argparse
 from engine import *
 from ai import draft_message, generate_reminder
 from push import push_to_wechat, send_message
+from enrich import enrich_contact, count_from_log
 
 def cmd_dashboard(args):
     d = get_dashboard()
@@ -77,6 +79,99 @@ def cmd_check(args):
             print(f"     上次: {summary[:40]}")
     print()
     return 0
+
+def cmd_enrich(args):
+    """AI 批量画像补全管道 (P0)。"""
+    opts = _parse_opts(args, ["--batch", "--dry-run", "--force", "--stats"])
+    # 解析 flags
+    dry_run = "--dry-run" in args
+    force = "--force" in args
+    stats = "--stats" in args
+    use_web = "--web" in args
+    batch = int(opts.get("--batch", "10"))
+
+    if stats:
+        s = get_enrichment_stats()
+        log_stats = count_from_log()
+        print(f"\n📊 画像补全统计")
+        print(f"{'='*40}")
+        print(f"  联系人总数:    {s['total']}人")
+        print(f"  已补全:        {s['enriched']}人")
+        print(f"  待补全:        {s['pending']}人 ({s['pending_pct']}%)")
+        # 从日志回读置信度统计
+        if log_stats["high"] or log_stats["medium"] or log_stats["low"]:
+            print(f"  按置信度:      高{log_stats['high']}人 / 中{log_stats['medium']}人 / 低{log_stats['low']}人")
+        # 已补全按角色分布
+        if s["by_relation"]:
+            print(f"  已补全角色分布:")
+            for rel, cnt in sorted(s["by_relation"].items(), key=lambda x: -x[1]):
+                print(f"    {rel}: {cnt}人")
+        # 待补全按强度分布
+        if s["by_strength_pending"]:
+            print(f"  待补全强度分布: {s['by_strength_pending']}")
+        return 0
+
+    # 获取候选人
+    candidates = get_enrichment_candidates(batch_size=batch, force=force)
+    if not candidates:
+        print("✅ 没有待补全的联系人（可加 --force 重新处理已补全的）")
+        return 0
+
+    web_flag = " 🌐" if use_web else ""
+
+    if dry_run:
+        print(f"\n🔍 预览模式: 下一批 {len(candidates)} 位候选人{web_flag}\n")
+        print(f"  {'姓名':12s} {'强度':4s} {'已有角色':8s} {'信息密度':6s}")
+        print(f"  {'-'*40}")
+        for c in candidates:
+            relation = c.get("relation", c.get("role", "")) or "未设定"
+            tags_count = len(c.get("tags", []))
+            has_notes = "📝" if c.get("notes") else "  "
+            info = f"tags{tags_count}" if tags_count else (has_notes if c.get("notes") else "仅名称")
+            print(f"  {c['name']:12s} {c.get('strength',3):4d} {relation:8s} {info:6s}")
+        print(f"\n💡 执行: python3 social.py enrich --batch {batch}{' --web' if use_web else ''}")
+        return 0
+
+    # 执行补全
+    mode = "🌐 带网络信源" if use_web else "🔧 本地信源"
+    print(f"\n{mode} 批量画像补全: {len(candidates)} 人\n")
+    enriched = skipped = errors = 0
+    for i, contact in enumerate(candidates, 1):
+        result = enrich_contact(contact, dry_run=False, use_web=use_web)
+        status = result.get("status", "?")
+        conf = result.get("confidence", 0)
+        name = result.get("name", "?")
+
+        if status == "enriched":
+            enriched += 1
+            rel = result.get("actions", [{}])[0].get("to", "?") if result.get("actions") else "?"
+            print(f"  ✅ [{i}/{len(candidates)}] {name} → {rel} (conf={conf})")
+        elif status == "enriched_light":
+            enriched += 1
+            print(f"  📝 [{i}/{len(candidates)}] {name} 追加备注 (conf={conf})")
+        elif status == "skipped":
+            skipped += 1
+            reason = result.get("reason", "")
+            print(f"  ⏭️  [{i}/{len(candidates)}] {name} 跳过 ({reason})")
+        elif status == "no_update":
+            skipped += 1
+            print(f"  ➖ [{i}/{len(candidates)}] {name} 无需更新")
+        else:
+            errors += 1
+            err = result.get("error", "未知错误")
+            print(f"  ❌ [{i}/{len(candidates)}] {name} 失败: {err}")
+
+    print(f"\n{'='*40}")
+    print(f"  完成: ✅ {enriched}  /  ⏭️ {skipped}  /  ❌ {errors}")
+    print(f"{'='*40}")
+
+    # 显示补全后的统计
+    s = get_enrichment_stats()
+    if s["pending"] > 0:
+        print(f"  剩余待补全: {s['pending']} 人")
+        print(f"  继续运行: python3 social.py enrich --batch {batch}")
+    return 0
+
 
 def main():
     if len(sys.argv) < 2:
@@ -174,18 +269,20 @@ def main():
         if len(args) < 2:
             print("用法: social.py note <CONTACT> <CONTENT> [--tags TAGS]")
             return 1
-        contact_id = args[0]
+        raw_id = args[0]
+        # 通过别名/模糊匹配解析联系人
+        contact, match_type = resolve_contact(raw_id)
+        if not contact:
+            return 1
+        contact_id = contact["id"]
+        if match_type != "id":
+            print(f"  ↳ 匹配到: {contact['name']} ({match_type})")
         opts = _parse_opts(args[1:], ["--tags"])
         content_parts = [a for a in args[1:] if not a.startswith("--")]
         content = " ".join(content_parts)
         tags = opts.get("--tags", "").split() if opts.get("--tags") else []
         ok, msg = add_memory(contact_id, content, tags)
         print(msg)
-        # Also update contact strength +1 if currently low
-        contact = get_contact(contact_id)
-        if contact and contact.get("strength", 3) < 5:
-            new_s = min(contact["strength"] + 1, 5)
-            update_contact(contact_id, {"strength": new_s})
         return 0 if ok else 1
 
     elif cmd == "birthdays":
@@ -227,11 +324,17 @@ def main():
         if len(args) < 2:
             print("用法: social.py log <CONTACT> <SUMMARY>")
             return 1
-        contact = args[0]
+        raw = args[0]
+        resolved, match_type = resolve_contact(raw)
+        if not resolved:
+            print(f"未找到联系人: {raw}")
+            return 1
+        if match_type != "id":
+            print(f"  ↳ 匹配到: {resolved['name']} ({match_type})")
         summary = " ".join(a for a in args[1:] if not a.startswith("--"))
         opts = _parse_opts(args[1:], ["--type"])
         type_ = opts.get("--type", "message")
-        record = add_timeline(contact, summary, type_=type_)
+        record = add_timeline(resolved["id"], summary, type_=type_)
         print(f"已记录: {record['summary'][:40]}")
         if record.get("pending"):
             print(f"待办已创建: {record['pending']}")
@@ -264,13 +367,14 @@ def main():
         if not args:
             print("用法: social.py draft <CONTACT> [--tone 亲切]")
             return 1
-        contact_id = args[0]
-        opts = _parse_opts(args[1:], ["--tone"])
-        tone = opts.get("--tone", "亲切")
-        contact = get_contact(contact_id)
+        raw_id = args[0]
+        contact, match_type = resolve_contact(raw_id)
         if not contact:
-            print(f"未找到联系人: {contact_id}")
+            print(f"未找到联系人: {raw_id}")
             return 1
+        contact_id = contact["id"]
+        if match_type != "id":
+            print(f"  ↳ 匹配到: {contact['name']} ({match_type})")
         timeline = list_timeline(contact=contact_id, days=60)
         context = "无最近互动记录"
         if timeline:
@@ -289,8 +393,9 @@ def main():
         tone = opts.get("--tone", "亲切")
         contact = get_contact(contact_id)
         if not contact:
-            print(f"未找到联系人: {contact_id}")
-            return 1
+            print(f"  ↳ 匹配到: {contact['name']} ({match_type})")
+        opts = _parse_opts(args[1:], ["--tone"])
+        tone = opts.get("--tone", "亲切")
         timeline = list_timeline(contact=contact_id, days=60)
         context = "无最近互动记录"
         if timeline:
@@ -304,10 +409,13 @@ def main():
 
     elif cmd == "status":
         if args:
-            c = get_contact(args[0])
-            if not c:
+            contact, match_type = resolve_contact(args[0])
+            if not contact:
                 print(f"未找到: {args[0]}")
                 return 1
+            c = contact
+            if match_type != "id":
+                print(f"  ↳ 匹配到: {c['name']} ({match_type})")
             print(f"\n{'='*40}")
             print(f"  {c['name']} ({c.get('role','?')})")
             print(f"{'='*40}")
@@ -410,6 +518,9 @@ def main():
                 print(f"    上次: {summary[:40]}")
         return 0
 
+    elif cmd == "enrich":
+        return cmd_enrich(args)
+
     elif cmd == "remind":
         d = get_dashboard()
         lines = [f"今日待办提醒 ({date.today().isoformat()})"]
@@ -431,7 +542,7 @@ def main():
             for c in d["cold_relationships"]:
                 lines.append(f"  {c['contact']} - {c['days']}天未联系")
         if not todos and not d["overdue_todos"] and not d["cold_relationships"]:
-            lines.append("\n今日无事，安心赚钱。")
+            lines.append("\n今日有事，安心赚钱。")
         msg = "\n".join(lines)
         ok, result = push_to_wechat("社交关系AI管家", msg)
         print(result)

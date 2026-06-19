@@ -1,5 +1,49 @@
 # 版本日志
 
+## 2.5.0 (规划中)
+
+### P0 — 批量画像补全管道
+- `enrich` 命令：AI 驱动的批量联系人画像补全
+- 输入信号：姓名/备注/标签/记忆/群组归属 多源融合
+- `--web` 模式：通过 DuckDuckGo 搜索获取联系人公开信息，注入提示词作为额外上下文（免费，无需 API Key）
+- 搜索策略：从标签/备注/角色提取上下文关键词，构造查询，取前 3 条结果摘要
+- 同一批次查询自动缓存，300ms 间隔防反爬
+- 三级置信度：强证据(8-10)→写入relation+tags、中等(5-7)→追加notes、弱→跳过
+- 保护规则：不覆盖已有relation、不删除notes、不改strength、tags只追加不覆写
+- `--dry-run` 预览、`--batch` 批次控制、`--force` 重新处理、`--stats` 统计视图
+- 补全日志 `data/enrichment_log.json`，每次操作可追溯
+
+### P1 — 关系图谱
+- 数据模型新增 `_connections` 字段（Connection 结构体）
+- `connect` 命令添加双向连接，自动同步 B→A
+- `connections <contact>` 查看个人关系网
+- `find-path <A> <B>` 跨联系人路径查找（BFS）
+- `scripts/graph.py` 可视化（支持 --contact ego 网络）
+- 仪表盘集成：总连接数/密度/TOP5
+
+### P1 — 群聊智能感知
+- 数据模型新增 `_groups` 字段（群名数组）
+- `list-groups` / `group-members` / `add-to-group` 命令
+- `import-groups --from-contacts` 从 OCR 导入数据自动提取群归属
+- 同群联系人自动打 `群友` 标签
+
+### P2 — 互动信号自动采集
+- `import-chat <file>` 微信聊天记录 .txt 导入
+- `import-calls <file>` 通话记录 CSV 导入
+- 按日期+联系人聚合，自动去重
+- 不修改联系人数据，仅 append 时间线
+
+### P2 — 关系健康分
+- `health` 命令：综合评分(0-100)，四因子加权（recency 40% / depth 30% / layers 20% / events 10%）
+- `health --fix` 列出需关注的关系（< 50 分）
+- `health --ranking` 排行榜
+- 四色等级：🟢健康(80+) / 🟡关注(50-79) / 🟠预警(20-49) / 🔴危险(0-19)
+- 仪表盘集成：分布图 + 平均分 + 下降最快 TOP5
+- 早间推送集成健康总览
+
+### 演进原则补充
+- 原则六（信号先行）、原则七（保守推理可追溯）、原则八（连接是增强非替代）
+
 ## 2.4.0 (2026-06-14)
 
 ### 新增
