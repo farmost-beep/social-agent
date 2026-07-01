@@ -368,6 +368,8 @@ def main():
             print("用法: social.py draft <CONTACT> [--tone 亲切]")
             return 1
         raw_id = args[0]
+        opts = _parse_opts(args[1:], ["--tone"])
+        tone = opts.get("--tone", "亲切")
         contact, match_type = resolve_contact(raw_id)
         if not contact:
             print(f"未找到联系人: {raw_id}")

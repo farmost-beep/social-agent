@@ -28,6 +28,16 @@ def _get_strength_by_name(name):
     return c.get("strength", 1) if c else 1
 
 
+def _extract_date(task, due):
+    """从待办中提取展示用的日期"""
+    if due:
+        return due[-5:]  # 取 MM-DD
+    import re
+    m = re.search(r'(\d{1,2})月(\d{1,2})[日号]', task)
+    if m:
+        return f"{m.group(1)}/{m.group(2)}"
+    return ""
+
 def build_morning():
     """09:00 今日概览"""
     d = get_dashboard()
@@ -39,8 +49,10 @@ def build_morning():
             c = get_contact(t["contact"])
             name = c["name"] if c else t["contact"]
             tag = "🔴" if t["priority"] == "P0" else "🟡"
-            task_short = t['task'][:35] + '…' if len(t['task']) > 35 else t['task']
-            lines.append(f"  {tag} {name} - {task_short}")
+            date_str = _extract_date(t['task'], t.get('due',''))
+            date_info = f"{date_str} " if date_str else ""
+            task_short = t['task'][:30] + '…' if len(t['task']) > 30 else t['task']
+            lines.append(f"  {tag} {date_info}{name} - {task_short}")
         lines.append("")
     # 冷却关系：只展示强度>=3的重要关系，其余只报总数
     cold = d.get("cold_relationships", [])
@@ -108,11 +120,12 @@ def build_evening():
         for r in timeline[:5]:
             contact_id = r.get("contact") or r.get("contact_group", "")
             if not contact_id:
-                lines.append(f"  · {r['summary'][:40]}")
+                summary = r.get("summary", r.get("note", r.get("content", "")))
+                lines.append(f"  · {summary[:40]}")
                 continue
             c = get_contact(contact_id)
             name = c["name"] if c else contact_id
-            lines.append(f"  · {name}: {r['summary'][:40]}")
+            lines.append(f"  · {name}: {r.get('summary', r.get('note', r.get('content', '')))[:40]}")
     else:
         lines.append("今天没有记录新互动。")
     lines.append("")

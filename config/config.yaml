@@ -3,7 +3,7 @@
 # config.local.yaml 优先于 config.yaml
 
 # 数据存储路径（默认 ./data）
-data_dir: "./data"
+data_dir: "/Users/cyingfang/.claude/skills/social-agent/data"
 
 # AI模型配置
 ai:

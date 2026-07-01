@@ -292,10 +292,11 @@ def add_memory(contact_id, content, tags=None):
             }
             c["memories"].append(memory)
             _save(CONTACTS_FILE, contacts)
-            # 轻度提升强度（不超过4），不碰5级家人
-            if c.get("strength", 3) < 4 and c.get("strength", 3) >= 1 and c.get("relation") != "family" and c.get("relation") != "self":
+            # 轻度提升强度：上级领导/家人可到5，其他不超过4
+            max_strength = 5 if c.get("relation") in ("上级领导", "family", "家人") else 4
+            if c.get("strength", 3) < max_strength and c.get("strength", 3) >= 1 and c.get("relation") != "self":
                 old_s = c["strength"]
-                c["strength"] = min(old_s + 1, 4)
+                c["strength"] = min(old_s + 1, max_strength)
                 _save(CONTACTS_FILE, contacts)
                 return True, f"已添加记忆: {content[:30]}...（强度{old_s}→{c['strength']}）"
             return True, f"已添加记忆: {content[:30]}..."
@@ -473,6 +474,20 @@ def complete_todo(todo_id):
             t["status"] = "completed"
             t["completed_at"] = datetime.now().isoformat()
             _save(TODOS_FILE, todos)
+            # 自动写入时间线
+            try:
+                timeline = _load(TIMELINE_FILE)
+                timeline.append({
+                    "id": f"auto-{datetime.now().strftime('%Y%m%d%H%M%S%f')}",
+                    "type": "task_completed",
+                    "date": datetime.now().strftime('%Y-%m-%d'),
+                    "title": f"✅ 完成: {t['task'][:40]}",
+                    "detail": f"{t.get('contact','')}: {t['task'][:80]}",
+                    "source": "auto-complete-todo"
+                })
+                _save(TIMELINE_FILE, timeline)
+            except Exception:
+                pass  # 时间线写入失败不影响待办本身
             return True, f"已完成: {t['task']}"
     return False, "未找到该待办"
 
