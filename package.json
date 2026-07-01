@@ -1,6 +1,6 @@
 {
   "name": "@farmost/social-agent",
-  "version": "2.5.0",
+  "version": "2.5.1",
   "description": "社交关系AI管家 - Claude Code Skill。自动追踪社交关系，帮你拟消息、记待办、维护人脉。",
   "author": "Contributors",
   "license": "MIT",
