@@ -54,9 +54,10 @@ class TestAbstractAndExceptions(unittest.TestCase):
 class TestClaudeClientInit(unittest.TestCase):
 
     def setUp(self):
-        # 清除可能的环境变量
+        # 清除可能的环境变量（包括 v3.0.3 新增的 AUTH_TOKEN fallback）
         self._saved_env = {}
-        for k in ["ANTHROPIC_API_KEY", "ANTHROPIC_MODEL", "ANTHROPIC_BASE_URL"]:
+        for k in ["ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN",
+                  "ANTHROPIC_MODEL", "ANTHROPIC_BASE_URL"]:
             if k in os.environ:
                 self._saved_env[k] = os.environ.pop(k)
 

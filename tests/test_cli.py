@@ -328,5 +328,229 @@ class TestStatusCommandFix(unittest.TestCase):
             os.chdir(original_cwd)
 
 
+class TestEnrichV3(unittest.TestCase):
+    """v3.0 简化版 enrich 测试"""
+
+    def setUp(self):
+        cli_module._PROJECT_ROOT = None
+
+    def test_pick_candidates_priority(self):
+        """_enrich_pick_candidates 按优先级选择"""
+        from social_cli.cli import _enrich_pick_candidates
+
+        contacts = [
+            {"id": "1", "name": "A", "strength": 1, "relation": ""},  # 优先级 1
+            {"id": "2", "name": "B", "strength": 5, "relation": ""},  # 跳过（强度>2）
+            {"id": "3", "name": "C", "strength": 2, "relation": "同行", "tags": []},  # 优先级 2
+            {"id": "4", "name": "D", "strength": 2, "relation": "同行", "tags": ["x"]},  # 跳过（已有 relation+tags）
+            {"id": "5", "name": "E", "strength": 1, "relation": "", "_enrich_version": 1},  # 跳过（已处理）
+        ]
+        candidates = _enrich_pick_candidates(contacts, batch=10, force=False)
+        ids = [c["id"] for c in candidates]
+        self.assertEqual(ids, ["1", "3"])
+
+    def test_pick_candidates_force_includes_processed(self):
+        """--force 包含已处理过的"""
+        from social_cli.cli import _enrich_pick_candidates
+
+        contacts = [
+            {"id": "1", "name": "A", "strength": 1, "relation": "", "_enrich_version": 1},
+        ]
+        candidates_default = _enrich_pick_candidates(contacts, batch=10, force=False)
+        candidates_force = _enrich_pick_candidates(contacts, batch=10, force=True)
+        self.assertEqual(len(candidates_default), 0)
+        self.assertEqual(len(candidates_force), 1)
+
+    def test_enrich_apply_protects_existing_relation(self):
+        """保护规则：已有 relation 不被覆盖"""
+        from social_cli.cli import _enrich_apply
+
+        contact = {"relation": "同行", "tags": ["金融"]}
+        result = {
+            "relation": "校友",  # 尝试覆盖
+            "tags": ["银行"],
+            "confidence": 8
+        }
+        changed = _enrich_apply(contact, result)
+        self.assertEqual(contact["relation"], "同行")  # 不变
+        self.assertIn("金融", contact["tags"])  # 旧 tag 保留
+        self.assertIn("银行", contact["tags"])  # 新 tag 追加
+        self.assertTrue(changed)  # tags 改变了就算 changed
+
+    def test_enrich_apply_low_confidence_skipped(self):
+        """低 confidence 跳过"""
+        from social_cli.cli import _enrich_apply
+
+        contact = {"relation": "", "tags": []}
+        result = {"relation": "同行", "tags": ["x"], "confidence": 2}
+        changed = _enrich_apply(contact, result)
+        self.assertFalse(changed)
+        self.assertEqual(contact["relation"], "")
+
+    def test_enrich_apply_invalid_relation_rejected(self):
+        """无效 relation 值被拒绝（不在白名单内）"""
+        from social_cli.cli import _enrich_apply
+
+        contact = {"relation": "", "tags": []}
+        result = {"relation": "未知类型", "tags": ["x"], "confidence": 8}
+        _enrich_apply(contact, result)
+        # 关键断言：无效 relation 不被写入
+        self.assertEqual(contact["relation"], "")
+        # 但 tags 仍会被追加（即使 relation 拒绝，tags 仍可能有用）
+        self.assertIn("x", contact["tags"])
+
+    def test_enrich_apply_cleans_empty_tags(self):
+        """清理空 tag"""
+        from social_cli.cli import _enrich_apply
+
+        contact = {"relation": "", "tags": ["valid", "", "  ", None]}
+        result = {"relation": "其他", "tags": ["new"], "confidence": 8}
+        _enrich_apply(contact, result)
+        # 验证：所有空 tag 被清理
+        self.assertNotIn("", contact["tags"])
+        self.assertNotIn("  ", contact["tags"])
+        self.assertNotIn(None, contact["tags"])
+        # 验证：valid 和 new 保留
+        self.assertIn("valid", contact["tags"])
+        self.assertIn("new", contact["tags"])
+
+    def test_enrich_apply_dedup_tags(self):
+        """tag 去重"""
+        from social_cli.cli import _enrich_apply
+
+        contact = {"relation": "", "tags": ["金融"]}
+        result = {"relation": "其他", "tags": ["金融", "银行"], "confidence": 8}
+        _enrich_apply(contact, result)
+        # "金融" 只出现一次
+        self.assertEqual(contact["tags"].count("金融"), 1)
+        self.assertIn("银行", contact["tags"])
+
+    def test_enrich_call_llm_parses_json(self):
+        """_enrich_call_llm 解析纯 JSON"""
+        from unittest.mock import MagicMock
+        from social_cli.cli import _enrich_call_llm
+
+        client = MagicMock()
+        client.complete_with_retry.return_value = '{"relation": "同行", "sub_relation": "金融", "tags": ["银行"], "confidence": 8}'
+
+        result = _enrich_call_llm(client, {"name": "张三", "notes": "", "tags": [], "strength": 2})
+        self.assertEqual(result["relation"], "同行")
+        self.assertEqual(result["confidence"], 8)
+        self.assertNotIn("_error", result)
+
+    def test_enrich_call_llm_handles_markdown_codeblock(self):
+        """_enrich_call_llm 处理 markdown 代码块"""
+        from unittest.mock import MagicMock
+        from social_cli.cli import _enrich_call_llm
+
+        client = MagicMock()
+        client.complete_with_retry.return_value = '```json\n{"relation": "其他", "confidence": 7}\n```'
+
+        result = _enrich_call_llm(client, {"name": "李四", "notes": "", "tags": [], "strength": 1})
+        self.assertEqual(result["relation"], "其他")
+        self.assertEqual(result["confidence"], 7)
+
+    def test_enrich_call_llm_handles_garbage(self):
+        """_enrich_call_llm 遇到垃圾返回错误标记"""
+        from unittest.mock import MagicMock
+        from social_cli.cli import _enrich_call_llm
+
+        client = MagicMock()
+        client.complete_with_retry.return_value = "这是一段无法解析的文字"
+
+        result = _enrich_call_llm(client, {"name": "王五", "notes": "", "tags": [], "strength": 1})
+        self.assertIn("_error", result)
+        self.assertEqual(result["confidence"], 0)
+
+
+class TestHealthScoring(unittest.TestCase):
+    """v3.0 health 健康分测试"""
+
+    def test_recency_score_thresholds(self):
+        """recency 分数阈值"""
+        from social_cli.cli import _recency_score
+        self.assertEqual(_recency_score(0), 100)
+        self.assertEqual(_recency_score(7), 100)
+        self.assertEqual(_recency_score(8), 80)
+        self.assertEqual(_recency_score(14), 80)
+        self.assertEqual(_recency_score(15), 60)
+        self.assertEqual(_recency_score(30), 60)
+        self.assertEqual(_recency_score(31), 40)
+        self.assertEqual(_recency_score(90), 40)
+        self.assertEqual(_recency_score(91), 20)
+        self.assertEqual(_recency_score(999), 20)
+
+    def test_grade_thresholds(self):
+        """等级阈值"""
+        from social_cli.cli import _grade_icon, _grade_label
+        # 健康
+        self.assertEqual(_grade_icon(100), "🟢")
+        self.assertEqual(_grade_icon(80), "🟢")
+        self.assertEqual(_grade_label(80), "健康")
+        # 关注
+        self.assertEqual(_grade_icon(79), "🟡")
+        self.assertEqual(_grade_icon(50), "🟡")
+        self.assertEqual(_grade_label(50), "关注")
+        # 预警
+        self.assertEqual(_grade_icon(49), "🟠")
+        self.assertEqual(_grade_icon(20), "🟠")
+        self.assertEqual(_grade_label(20), "预警")
+        # 危险
+        self.assertEqual(_grade_icon(19), "🔴")
+        self.assertEqual(_grade_icon(0), "🔴")
+        self.assertEqual(_grade_label(0), "危险")
+
+    def test_depth_score_with_meetings(self):
+        """见面互动 depth 满分"""
+        from social_cli.cli import _depth_score
+        timeline = [
+            {"contact": "A", "type": "meeting", "date": "2026-07-01"},
+            {"contact": "A", "type": "meeting", "date": "2026-06-15"},
+            {"contact": "A", "type": "meeting", "date": "2026-06-01"},
+        ]
+        self.assertEqual(_depth_score(timeline, "A"), 100)
+
+    def test_depth_score_with_messages_only(self):
+        """纯消息互动 depth 较低"""
+        from social_cli.cli import _depth_score
+        timeline = [
+            {"contact": "A", "type": "message", "date": "2026-07-01"},
+            {"contact": "A", "type": "message", "date": "2026-06-15"},
+        ]
+        self.assertEqual(_depth_score(timeline, "A"), 40)
+
+    def test_depth_score_no_timeline(self):
+        """无 timeline 时 depth=0"""
+        from social_cli.cli import _depth_score
+        self.assertEqual(_depth_score([], "A"), 0)
+        self.assertEqual(_depth_score(None, "A"), 0)
+
+    def test_days_since_calculation(self):
+        """距今天数计算"""
+        from social_cli.cli import _days_since
+        from datetime import date
+        today = date.today()
+        # 7 天前
+        week_ago = today.replace(day=today.day - 7) if today.day > 7 else today
+        timeline = [{"contact": "A", "date": week_ago.isoformat()}]
+        result = _days_since(timeline, "A")
+        self.assertIsInstance(result, int)
+        # 没记录
+        self.assertEqual(_days_since([], "A"), 999)
+        # 不匹配
+        timeline_b = [{"contact": "B", "date": "2026-07-01"}]
+        self.assertEqual(_days_since(timeline_b, "A"), 999)
+
+    def test_total_score_weighting(self):
+        """总评分 = recency × 0.4 + depth × 0.6"""
+        from social_cli.cli import _recency_score, _depth_score
+        # 7 天内 + 见面 = 100*0.4 + 100*0.6 = 100
+        # 8 天前 + 仅消息 = 80*0.4 + 40*0.6 = 56
+        score1 = int(_recency_score(7) * 0.4 + 100 * 0.6)
+        score2 = int(_recency_score(8) * 0.4 + 40 * 0.6)
+        self.assertEqual(score1, 100)
+        self.assertEqual(score2, 56)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

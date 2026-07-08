@@ -55,10 +55,18 @@ class ClaudeClient(LLMClient):
         if httpx is None:
             raise ImportError("请先安装 httpx: pip install httpx")
 
-        self.api_key = api_key or os.environ.get("ANTHROPIC_API_KEY")
+        # API Key 优先级：参数 > ANTHROPIC_API_KEY > ANTHROPIC_AUTH_TOKEN
+        # ANTHROPIC_AUTH_TOKEN 是 Anthropic SDK 内部使用的环境变量名
+        # 支持它让 social-cli 与 Claude Code / MiniMax 代理无缝兼容
+        self.api_key = (
+            api_key
+            or os.environ.get("ANTHROPIC_API_KEY")
+            or os.environ.get("ANTHROPIC_AUTH_TOKEN")
+        )
         if not self.api_key:
             raise LLMAuthError(
-                "未设置 ANTHROPIC_API_KEY（可通过环境变量或参数传入）"
+                "未设置 ANTHROPIC_API_KEY 或 ANTHROPIC_AUTH_TOKEN"
+                "（可通过环境变量或参数传入）"
             )
 
         self.model = model or os.environ.get("ANTHROPIC_MODEL") or DEFAULT_MODEL

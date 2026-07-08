@@ -200,23 +200,392 @@ def cmd_todos(args) -> int:
 
 
 def cmd_enrich(args) -> int:
-    """批量画像补全。v3.0 转发到旧实现。"""
-    root = _ensure_project_path()
-    if root is None:
+    """批量画像补全（v3.0 简化版实现）
+
+    与 v2.5 旧实现的区别：
+    - 直接调 LLMClient，不依赖旧 src.social.cmd_enrich
+    - 保守策略：confidence < 3 跳过，已有 relation 不覆盖
+    - 自动写入 _enrich_version 字段
+    - --stats 显示统计（复用旧版）
+    """
+    # --stats 走 v2.5 旧实现（统计功能未重写）
+    if getattr(args, 'stats', False):
+        root = _ensure_project_path()
+        if root is None:
+            print("✗ 找不到 social-agent 项目根")
+            return 1
+        try:
+            from src.social import cmd_enrich as _impl  # type: ignore
+        except ImportError as e:
+            print(f"✗ 无法加载 src.social: {e}")
+            return 1
+        return _impl(['--stats'])
+
+    return _enrich_run(args)
+
+
+# ── v3.0.4 新增：简化版 enrich 实现（绕过旧 v2.5 实现） ──
+
+_ENRICH_SYSTEM_PROMPT = """你是社交关系AI助手，擅长从姓名片段和已有信息推断联系人画像。
+根据用户提供的联系人信息，输出 JSON 格式补全结果。
+要求：
+1. 只能输出 JSON，不要解释
+2. relation 必须是：同行/校友/合作/家人/其他
+3. sub_relation 不超过 8 字
+4. tags 1-3 个简短标签
+5. confidence 1-10（10=完全确定，1=纯猜测）"""
+
+
+def _enrich_pick_candidates(contacts: list, batch: int, force: bool) -> list:
+    """挑选待补全的联系人
+
+    优先级（v3.0 简化版）：
+    1. 强度 ≤ 2 且 relation 为空（最高价值但未分类）
+    2. 强度 ≤ 2 且无 tags
+    3. 跳过已有 _enrich_version >= 1（除非 --force）
+    """
+    candidates = []
+    for c in contacts:
+        if not force and c.get("_enrich_version", 0) >= 1:
+            continue
+        if c.get("strength", 0) > 2:
+            continue
+        if not c.get("relation"):
+            candidates.append((c, 1))  # 最高优先级
+        elif not c.get("tags") or not any(t for t in c.get("tags", [])):
+            candidates.append((c, 2))
+    candidates.sort(key=lambda x: x[1])
+    return [c for c, _ in candidates[:batch]]
+
+
+def _enrich_call_llm(client, contact: dict) -> dict:
+    """调用 LLM 补全单个联系人，返回 dict {relation, sub_relation, tags, confidence}"""
+    import json as _json
+
+    name = contact.get("name", "未知")
+    existing_notes = contact.get("notes", "")[:200]
+    existing_tags = contact.get("tags", [])
+
+    user_prompt = f"""联系人姓名：{name}
+已有备注：{existing_notes or '（无）'}
+已有标签：{existing_tags or '（无）'}
+强度：{contact.get('strength', 0)}
+
+请输出 JSON 补全结果。"""
+
+    response = client.complete_with_retry(user_prompt, system=_ENRICH_SYSTEM_PROMPT, max_retries=1)
+
+    # 尝试从响应中提取 JSON
+    response = response.strip()
+    # 去除可能的代码块标记
+    if response.startswith("```"):
+        lines = response.split("\n")
+        response = "\n".join(l for l in lines if not l.strip().startswith("```"))
+
+    try:
+        return _json.loads(response)
+    except _json.JSONDecodeError:
+        # 尝试提取 {...} 块
+        import re
+        match = re.search(r'\{.*\}', response, re.DOTALL)
+        if match:
+            try:
+                return _json.loads(match.group(0))
+            except _json.JSONDecodeError:
+                pass
+        return {"confidence": 0, "_error": f"无法解析: {response[:100]}"}
+
+
+def _enrich_apply(contact: dict, llm_result: dict) -> bool:
+    """把 LLM 结果应用到联系人，返回是否成功
+
+    保护规则（SPEC §8.2.3）：
+    - confidence < 3 跳过
+    - 已有 relation 不覆盖
+    - tags 只追加不覆盖
+    - 不动 strength / notes
+    """
+    confidence = llm_result.get("confidence", 0)
+    if confidence < 3:
+        return False
+
+    changed = False
+    if not contact.get("relation"):
+        new_rel = llm_result.get("relation", "").strip()
+        if new_rel and new_rel in ("同行", "校友", "合作", "家人", "其他"):
+            contact["relation"] = new_rel
+            changed = True
+
+    if not contact.get("sub_relation"):
+        new_sub = llm_result.get("sub_relation", "").strip()
+        if new_sub:
+            contact["sub_relation"] = new_sub
+            changed = True
+
+    new_tags = llm_result.get("tags", [])
+    if isinstance(new_tags, list):
+        existing_tags = contact.get("tags", []) or []
+        # 过滤空字符串 + 去重 + 追加
+        for tag in new_tags:
+            tag = str(tag).strip()
+            if tag and tag not in existing_tags:
+                existing_tags.append(tag)
+        # 清理已有 tags 中的空字符串
+        contact["tags"] = [t for t in existing_tags if t and t.strip()]
+        if new_tags:
+            changed = True
+
+    return changed
+
+
+def _enrich_run(args) -> int:
+    """v3.0 简化版 enrich 实现
+
+    特性：
+    - 用 LLMClient 推断 relation/sub_relation/tags
+    - 保守策略：confidence < 3 跳过，已有 relation 不覆盖
+    - 标记 _enrich_version
+    - 实时进度输出
+    """
+    import json as _json
+
+    if _ensure_project_path() is None:
         print("✗ 找不到 social-agent 项目根")
         return 1
+
     try:
-        from src.social import cmd_enrich  # type: ignore
-        return cmd_enrich(args)
+        from engine import _load, _save, CONTACTS_FILE
+        from src.llm import get_client
     except ImportError as e:
-        print(f"✗ 无法加载 src.social: {e}")
+        print(f"✗ 无法加载依赖: {e}")
         return 1
+
+    contacts = _load(CONTACTS_FILE)
+    if not isinstance(contacts, list):
+        print("✗ contacts.json 格式异常（非列表）")
+        return 1
+
+    batch = args.batch if args.batch is not None else 5
+    candidates = _enrich_pick_candidates(contacts, batch, args.force)
+
+    print(f"\n📊 enrich 状态")
+    print(f"  总联系人: {len(contacts)}")
+    print(f"  待补全（强度≤2且无relation/tags）: {len([c for c in contacts if c.get('strength',0)<=2 and (not c.get('relation') or not c.get('tags') or not any(c.get('tags',[])))])}")
+    print(f"  本次处理: {len(candidates)}")
+    print()
+
+    if not candidates:
+        print("✓ 没有待补全的联系人")
+        return 0
+
+    if args.dry_run:
+        print("🔍 预览（dry-run）:")
+        for c in candidates:
+            print(f"  - [{c.get('strength',0)}] {c.get('name','?')} ({c.get('id','?')})")
+        return 0
+
+    # 实际跑
+    try:
+        client = get_client()
+    except Exception as e:
+        print(f"✗ LLM 初始化失败: {e}")
+        return 1
+
+    success = 0
+    skipped = 0
+    failed = 0
+
+    for i, c in enumerate(candidates, 1):
+        name = c.get("name", "?")
+        print(f"  [{i}/{len(candidates)}] {name}...", end=" ", flush=True)
+
+        try:
+            result = _enrich_call_llm(client, c)
+            if result.get("_error"):
+                print(f"✗ 解析失败: {result['_error'][:40]}")
+                failed += 1
+                continue
+
+            confidence = result.get("confidence", 0)
+            if _enrich_apply(c, result):
+                c["_enrich_version"] = c.get("_enrich_version", 0) + 1
+                success += 1
+                rel = c.get("relation", "")
+                tags = c.get("tags", [])
+                print(f"✓ conf={confidence} rel={rel} tags={tags[:2]}")
+            else:
+                skipped += 1
+                print(f"⏭ confidence={confidence} 跳过（<3 或无变化）")
+
+        except Exception as e:
+            print(f"✗ 异常: {str(e)[:50]}")
+            failed += 1
+
+    # 保存
+    if success > 0:
+        _save(CONTACTS_FILE, contacts)
+        print(f"\n✓ 已保存 {success} 个联系人的补全结果到 {CONTACTS_FILE.name}")
+    else:
+        print(f"\n⚠ 无变化，未写入文件")
+
+    print(f"\n📈 本次汇总: 成功 {success} / 跳过 {skipped} / 失败 {failed}")
+    return 0
+
+
+# ── v3.0 health 健康分辅助函数（模块级，便于测试） ──
+
+def _recency_score(days):
+    """根据天数映射 recency 分"""
+    if days <= 7: return 100
+    if days <= 14: return 80
+    if days <= 30: return 60
+    if days <= 90: return 40
+    return 20
+
+
+def _grade_icon(score):
+    if score >= 80: return "🟢"
+    if score >= 50: return "🟡"
+    if score >= 20: return "🟠"
+    return "🔴"
+
+
+def _grade_label(score):
+    if score >= 80: return "健康"
+    if score >= 50: return "关注"
+    if score >= 20: return "预警"
+    return "危险"
+
+
+def _days_since(timeline, contact_id):
+    """计算最后互动距今的天数"""
+    from datetime import date, datetime
+    if not timeline:
+        return 999
+    related = [t for t in timeline if t.get("contact") == contact_id]
+    if not related:
+        return 999
+    last_date = max(t.get("date", "") for t in related)
+    try:
+        d = datetime.strptime(last_date[:10], "%Y-%m-%d").date()
+        return (date.today() - d).days
+    except (ValueError, TypeError):
+        return 999
+
+
+def _depth_score(timeline, contact_id):
+    """根据最近 3 次互动类型计算 depth 分"""
+    if not timeline:
+        return 0
+    related = sorted(
+        [t for t in timeline if t.get("contact") == contact_id],
+        key=lambda t: t.get("date", ""),
+        reverse=True
+    )[:3]
+    if not related:
+        return 0
+    type_score = {"meeting": 100, "call": 70, "message": 40, "milestone": 50}
+    scores = [type_score.get(t.get("type", "message"), 40) for t in related]
+    return sum(scores) // len(scores)
 
 
 def cmd_health(args) -> int:
-    """关系健康分。v3.0 暂未实现，提示用户。"""
-    print("⚠ health 命令尚未在 v3.0 实现，请用 v2.5 的 src/social.py health")
-    return 1
+    """关系健康分（v3.0 简化版）
+
+    公式：health_score = recency × 0.4 + depth × 0.6
+
+    等级：
+    - 🟢 健康 (80-100)
+    - 🟡 关注 (50-79)
+    - 🟠 预警 (20-49)
+    - 🔴 危险 (0-19)
+    """
+    if _ensure_project_path() is None:
+        print("✗ 找不到 social-agent 项目根")
+        return 1
+
+    try:
+        from engine import _load, CONTACTS_FILE, TIMELINE_FILE
+    except ImportError as e:
+        print(f"✗ 无法加载 engine: {e}")
+        return 1
+
+    # 加载数据
+    contacts = _load(CONTACTS_FILE)
+    timeline = _load(TIMELINE_FILE)
+
+    if not isinstance(contacts, list):
+        print("✗ contacts.json 格式异常")
+        return 1
+
+    # 计算每个联系人的健康分
+    scored = []
+    for c in contacts:
+        cid = c.get("id", "")
+        if not cid:
+            continue
+        days = _days_since(timeline, cid)
+        d_score = _depth_score(timeline, cid)
+        r_score = _recency_score(days)
+        total = int(r_score * 0.4 + d_score * 0.6)
+        scored.append({
+            "contact": c,
+            "name": c.get("name", "?"),
+            "strength": c.get("strength", 0),
+            "days": days if days < 999 else "从未",
+            "score": total,
+            "grade": _grade_icon(total),
+            "label": _grade_label(total),
+        })
+
+    # 排序：分数低（最该关注）的优先
+    scored.sort(key=lambda x: x["score"])
+
+    # 输出
+    if args.contact:
+        # 单人模式：找所有匹配项（避免歧义）
+        matches = [s for s in scored if args.contact in s["name"] or args.contact == s["contact"].get("id")]
+        if not matches:
+            print(f"✗ 找不到联系人: {args.contact}")
+            return 1
+        if len(matches) > 1:
+            print(f"\n⚠ '{args.contact}' 匹配 {len(matches)} 个联系人，请更精确指定：")
+            for s in matches[:10]:
+                days_str = f"{s['days']}天" if isinstance(s['days'], int) else "从未联系"
+                print(f"  {s['grade']} {s['score']:3d}分 [{s['strength']}] {s['name']} (id={s['contact'].get('id')}) — 上次 {days_str}")
+            return 0
+        s = matches[0]
+        days_str = f"{s['days']}天" if isinstance(s['days'], int) else "从未联系"
+        recency = _recency_score(s['days'] if isinstance(s['days'], int) else 999)
+        depth = _depth_score(timeline, s["contact"].get("id", ""))
+        print(f"\n{_grade_icon(s['score'])} {s['name']} {s['score']}分 — {s['label']}")
+        print(f"  强度: {s['strength']}")
+        print(f"  距上次联系: {days_str}")
+        print(f"  recency: {recency}/100")
+        print(f"  depth: {depth}/100")
+        return 0
+
+    if args.fix:
+        scored = [s for s in scored if s["score"] < 50]
+        print(f"\n⚠️ 需关注的健康问题（{len(scored)} 人）\n")
+    else:
+        print(f"\n📊 关系健康分（{len(scored)} 人）\n")
+
+    if args.ranking:
+        scored.sort(key=lambda x: x["score"], reverse=True)
+        print("（排行：分数从高到低）\n")
+
+    limit = 30 if not args.fix else 50
+    for s in scored[:limit]:
+        if isinstance(s['days'], int):
+            days_str = f"{s['days']}天"
+        else:
+            days_str = "从未联系"
+        print(f"  {s['grade']} {s['score']:3d}分 [{s['strength']}] {s['name']} — 上次 {days_str}")
+
+    if len(scored) > limit:
+        print(f"\n  ... (还有 {len(scored) - limit} 人未显示)")
+    return 0
 
 
 def cmd_draft(args) -> int:
@@ -283,9 +652,12 @@ def _config_show() -> int:
     print()
     print("环境变量:")
     import os
-    for var in ["ANTHROPIC_API_KEY", "OPENAI_API_KEY", "ANTHROPIC_BASE_URL", "LLM_ENGINE"]:
+    # 同时显示 ANTHROPIC_AUTH_TOKEN（兼容 Claude Code 内部变量名）
+    for var in ["ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "OPENAI_API_KEY",
+                "ANTHROPIC_BASE_URL", "LLM_ENGINE"]:
         val = os.environ.get(var, "(未设置)")
-        print(f"  {var} = {val[:20]}{'...' if len(val) > 20 else ''}")
+        masked = val[:8] + "***" if len(val) > 12 and val != "(未设置)" else val
+        print(f"  {var} = {masked}")
     return 0
 
 
@@ -375,7 +747,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     # enrich
     p_enrich = subparsers.add_parser("enrich", help="批量画像补全")
-    p_enrich.add_argument("--batch", type=int, default=10, help="批次大小")
+    p_enrich.add_argument("--batch", type=int, default=5, help="批次大小（默认 5）")
     p_enrich.add_argument("--dry-run", action="store_true", help="预览模式")
     p_enrich.add_argument("--force", action="store_true", help="重新处理")
     p_enrich.add_argument("--stats", action="store_true", help="只看统计")
