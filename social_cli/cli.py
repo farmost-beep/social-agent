@@ -18,6 +18,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from pathlib import Path
 from typing import List, Optional
@@ -25,33 +26,130 @@ from typing import List, Optional
 # 包内相对导入
 from . import __version__
 
+# ── 项目根定位 ──
+# 全局 `social` 命令启动时 cwd 不一定是项目根，需要主动定位
+# 否则 `from src.social import ...` 会 ImportError
+
+_PROJECT_ROOT: Optional[Path] = None
+
+
+def _find_project_root() -> Optional[Path]:
+    """定位 social-agent 项目根目录
+
+    优先级：
+    1. 环境变量 SOCIAL_AGENT_HOME
+    2. 向上 5 层找含 config/ 的目录
+    3. 向上 5 层找含 data/contacts.json 的目录
+    4. 当前工作目录（兜底）
+    """
+    # 1. 环境变量
+    env = os.environ.get("SOCIAL_AGENT_HOME")
+    if env and (Path(env) / "config").is_dir():
+        return Path(env)
+
+    # 2/3. 从社会_cli 包位置向上找
+    # social_cli 在 .../social-agent/social_cli/，向上 1 层就是项目根
+    pkg_parent = Path(__file__).resolve().parent.parent
+    if (pkg_parent / "config").is_dir():
+        return pkg_parent
+
+    # 从 cwd 向上找
+    cwd = Path.cwd()
+    p = cwd
+    for _ in range(5):
+        if (p / "config").is_dir() and (p / "src").is_dir():
+            return p
+        if (p / "data" / "contacts.json").exists():
+            return p
+        p = p.parent
+        if p == p.parent:
+            break
+
+    return None
+
+
+def _ensure_project_path() -> Optional[Path]:
+    """确保 social-agent 项目根和 src/ 在 sys.path 中，返回项目根或 None
+
+    src/social.py 使用 `from engine import *` 风格（不带 src. 前缀），
+    所以需要把 src/ 目录加到 sys.path，而不是项目根。
+    """
+    global _PROJECT_ROOT
+    if _PROJECT_ROOT is not None:
+        return _PROJECT_ROOT
+
+    root = _find_project_root()
+    if root is None:
+        return None
+
+    # 1. 把 src/ 目录加到 sys.path（让 `from engine import *` 工作）
+    src_dir = root / "src"
+    if src_dir.is_dir():
+        src_str = str(src_dir)
+        if src_str not in sys.path:
+            sys.path.insert(0, src_str)
+
+    # 2. 同时把项目根加进去（让 `from src.llm import ...` 工作）
+    root_str = str(root)
+    if root_str not in sys.path:
+        sys.path.insert(0, root_str)
+
+    # 3. 切换 cwd 到项目根（让 engine.py 的默认 data_dir=./data 解析正确）
+    if Path.cwd() != root:
+        os.chdir(root)
+
+    _PROJECT_ROOT = root
+    return root
+
+
+# 启动时自动定位
+_ensure_project_path()
+
+
 # ── 子命令实现 ──
 # v3.0 最小版：先实现"读取类"和"配置类"命令
 # 写入类命令（enrich等）暂时转发到旧 src/ 实现
 
 def cmd_status(args) -> int:
     """联系人状态总览。v3.0 先转发到旧实现。"""
+    root = _ensure_project_path()
+    if root is None:
+        print("✗ 找不到 social-agent 项目根，请设置 SOCIAL_AGENT_HOME 环境变量")
+        return 1
     try:
         from src.social import cmd_dashboard  # type: ignore
         return cmd_dashboard(args)
-    except ImportError:
-        print("✗ 无法加载 src.social，请确保在项目根目录运行")
+    except ImportError as e:
+        print(f"✗ 无法加载 src.social: {e}")
+        print(f"  当前项目根: {root}")
         return 1
 
 
 def cmd_todos(args) -> int:
-    """查看待办列表。v3.0 先转发到旧实现。"""
-    print("（todo: 转发到旧 src.social）")
-    return 0
+    """查看待办列表。v3.0 转发到旧实现。"""
+    root = _ensure_project_path()
+    if root is None:
+        print("✗ 找不到 social-agent 项目根")
+        return 1
+    try:
+        from src.social import cmd_todos as _impl  # type: ignore
+        return _impl(args)
+    except (ImportError, AttributeError):
+        print("⚠ todos 暂未在 src.social 暴露，请用 v2 social-agent todos")
+        return 1
 
 
 def cmd_enrich(args) -> int:
     """批量画像补全。v3.0 转发到旧实现。"""
+    root = _ensure_project_path()
+    if root is None:
+        print("✗ 找不到 social-agent 项目根")
+        return 1
     try:
         from src.social import cmd_enrich  # type: ignore
         return cmd_enrich(args)
-    except ImportError:
-        print("✗ 无法加载 src.social")
+    except ImportError as e:
+        print(f"✗ 无法加载 src.social: {e}")
         return 1
 
 
@@ -65,6 +163,10 @@ def cmd_draft(args) -> int:
     """AI拟稿。v3.0 使用新 LLM 抽象层。"""
     if not args.message:
         print("✗ 请提供要拟稿的提示（-m）或联系人名")
+        return 1
+
+    if _ensure_project_path() is None:
+        print("✗ 找不到 social-agent 项目根")
         return 1
 
     try:
@@ -95,10 +197,13 @@ def cmd_config(args) -> int:
 
 def _config_show() -> int:
     """显示当前 LLM 配置"""
+    if _ensure_project_path() is None:
+        print("✗ 找不到 social-agent 项目根")
+        return 1
     try:
-        from src.llm import get_client, list_providers
-    except ImportError:
-        print("✗ 无法加载 llm 模块")
+        from src.llm import list_providers
+    except ImportError as e:
+        print(f"✗ 无法加载 src.llm: {e}")
         return 1
 
     providers = list_providers()
@@ -132,10 +237,13 @@ def _config_set(key: Optional[str], value: Optional[str]) -> int:
 
 def _config_providers() -> int:
     """列出所有可用 provider"""
+    if _ensure_project_path() is None:
+        print("✗ 找不到 social-agent 项目根")
+        return 1
     try:
         from src.llm import list_providers
-    except ImportError:
-        print("✗ 无法加载 llm 模块")
+    except ImportError as e:
+        print(f"✗ 无法加载 src.llm: {e}")
         return 1
     print("可用 LLM providers:")
     for p in list_providers():
@@ -147,6 +255,10 @@ def cmd_chat(args) -> int:
     """与AI对话（直接调用 LLM）"""
     if not args.message:
         print("✗ 请提供消息内容")
+        return 1
+
+    if _ensure_project_path() is None:
+        print("✗ 找不到 social-agent 项目根")
         return 1
 
     try:

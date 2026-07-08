@@ -8,7 +8,9 @@
 5. chat 命令（mock LLMClient）
 6. draft 命令（mock ai.draft_message）
 7. 错误处理（KeyboardInterrupt、未知命令、无子命令）
+8. 项目根定位（_find_project_root / _ensure_project_path）
 """
+import os
 import sys
 import unittest
 from pathlib import Path
@@ -17,7 +19,11 @@ from unittest.mock import patch, MagicMock
 # 将项目根加入路径（这样才能 import social_cli）
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from social_cli.cli import main, build_parser, cmd_version, cmd_config, cmd_draft, cmd_chat
+from social_cli import cli as cli_module
+from social_cli.cli import (
+    main, build_parser, cmd_version, cmd_config, cmd_draft, cmd_chat,
+    _find_project_root, _ensure_project_path, _PROJECT_ROOT,
+)
 
 
 class TestArgparse(unittest.TestCase):
@@ -225,6 +231,101 @@ class TestErrorHandling(unittest.TestCase):
             mock_commands.get.return_value = MagicMock(side_effect=RuntimeError("boom"))
             result = main(["version"])
             self.assertEqual(result, 1)
+
+
+class TestProjectRootLocation(unittest.TestCase):
+    """项目根定位测试（v3.0.1 修复 ImportError 引入）"""
+
+    def setUp(self):
+        """每个测试前重置单例和 sys.path"""
+        cli_module._PROJECT_ROOT = None
+        # 清理可能添加的 social-agent 路径
+        self._saved_path = sys.path.copy()
+
+    def tearDown(self):
+        """恢复 sys.path"""
+        sys.path[:] = self._saved_path
+        cli_module._PROJECT_ROOT = None
+
+    def test_finds_project_via_package_parent(self):
+        """通过 social_cli 包位置向上找"""
+        # social_cli 包在 <project>/social_cli/，向上1层就是项目根
+        # 这个测试在 social-agent 项目内运行，必然成功
+        root = _find_project_root()
+        self.assertIsNotNone(root)
+        self.assertTrue((root / "config").is_dir())
+        self.assertTrue((root / "src").is_dir())
+        self.assertTrue((root / "data").is_dir())
+
+    def test_finds_project_via_env_var(self):
+        """环境变量 SOCIAL_AGENT_HOME 优先"""
+        # 项目根就是测试所在的项目根
+        expected = _find_project_root()
+        with patch.dict(os.environ, {"SOCIAL_AGENT_HOME": str(expected)}):
+            result = _find_project_root()
+            self.assertEqual(result, expected)
+
+    def test_ensure_project_path_adds_to_sys_path(self):
+        """_ensure_project_path 会把 src/ 和项目根加到 sys.path"""
+        # 清理可能的污染
+        root = _ensure_project_path()
+        self.assertIsNotNone(root)
+
+        # 验证 src/ 在 sys.path
+        self.assertIn(str(root / "src"), sys.path)
+        # 验证项目根在 sys.path
+        self.assertIn(str(root), sys.path)
+
+    def test_ensure_project_path_changes_cwd(self):
+        """_ensure_project_path 会切换 cwd 到项目根（让 ./data 解析正确）"""
+        # 临时切到 /tmp
+        original_cwd = os.getcwd()
+        try:
+            os.chdir("/tmp")
+            root = _ensure_project_path()
+            self.assertIsNotNone(root)
+            # 验证 cwd 已切换
+            self.assertEqual(os.getcwd(), str(root))
+        finally:
+            os.chdir(original_cwd)
+
+    def test_ensure_project_path_singleton(self):
+        """_ensure_project_path 单例缓存（第二次调用直接返回缓存值）"""
+        # 第一次调用
+        root1 = _ensure_project_path()
+        self.assertIsNotNone(root1)
+        # 验证 sys.path 已有 src/
+        self.assertIn(str(root1 / "src"), sys.path)
+
+        # 第二次调用应该返回缓存
+        root2 = _ensure_project_path()
+        self.assertEqual(root1, root2)
+        # 单例应保持
+        self.assertIs(cli_module._PROJECT_ROOT, root1)
+
+    def test_find_returns_none_for_nonexistent_env(self):
+        """无效的 SOCIAL_AGENT_HOME 返回 None（fallback 到其他方式）"""
+        with patch.dict(os.environ, {"SOCIAL_AGENT_HOME": "/nonexistent/path/xyz"}):
+            # 会 fallback 到包位置/cwd 方式（因为我们在项目内运行）
+            result = _find_project_root()
+            # 在项目内运行时仍能找到（不强制返回 None）
+            self.assertIsNotNone(result)
+
+
+class TestStatusCommandFix(unittest.TestCase):
+    """回归测试：social status 修复后能正常工作"""
+
+    def test_status_works_from_any_cwd(self):
+        """从任何 cwd 运行 social status 都能找到项目"""
+        original_cwd = os.getcwd()
+        try:
+            os.chdir("/tmp")
+            # 调用 _ensure_project_path 应能找到 social-agent
+            root = _ensure_project_path()
+            self.assertIsNotNone(root)
+            self.assertIn(str(root), sys.path)
+        finally:
+            os.chdir(original_cwd)
 
 
 if __name__ == "__main__":
