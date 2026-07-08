@@ -126,17 +126,77 @@ def cmd_status(args) -> int:
 
 
 def cmd_todos(args) -> int:
-    """查看待办列表。v3.0 转发到旧实现。"""
-    root = _ensure_project_path()
-    if root is None:
+    """查看待办列表。v3.0 直接调 engine.list_todos()
+
+    默认显示 pending 状态
+    --all       : 显示全部（含 completed）
+    --completed : 只显示已完成
+    --recent N  : 显示最近 N 天内创建/完成的
+    """
+    if _ensure_project_path() is None:
         print("✗ 找不到 social-agent 项目根")
         return 1
     try:
-        from src.social import cmd_todos as _impl  # type: ignore
-        return _impl(args)
-    except (ImportError, AttributeError):
-        print("⚠ todos 暂未在 src.social 暴露，请用 v2 social-agent todos")
+        from engine import list_todos, _load, TODOS_FILE
+    except ImportError as e:
+        print(f"✗ 无法加载 engine: {e}")
         return 1
+
+    # 决定状态过滤
+    if args.completed:
+        status_filter = "completed"
+        title = "✅ 已完成"
+    elif args.all:
+        status_filter = None  # 不过滤
+        title = "📋 全部待办"
+    else:
+        status_filter = "pending"
+        title = "📋 待办列表"
+
+    # 取数据
+    if args.all:
+        todos = _load(TODOS_FILE)  # 全部
+    else:
+        todos = list_todos(status=status_filter)
+
+    # 按 created 倒序（最新的在前）
+    todos = sorted(todos, key=lambda t: t.get("created", ""), reverse=True)
+
+    # 近期过滤
+    if args.recent:
+        from datetime import date, timedelta
+        cutoff = (date.today() - timedelta(days=args.recent)).isoformat()
+        todos = [t for t in todos if t.get("created", "") >= cutoff]
+
+    if not todos:
+        print(f"✓ {title}：无")
+        return 0
+
+    print(f"\n{title}（共 {len(todos)} 项）\n")
+    today = __import__('datetime').date.today().isoformat()
+    for i, t in enumerate(todos, 1):
+        priority = t.get("priority", "P2")
+        contact = t.get("contact", "—")
+        task = t.get("task", "")[:55]
+        due = t.get("due", "")
+        status = t.get("status", "pending")
+        created = t.get("created", "")[:10]
+
+        # 状态图标
+        if status == "completed":
+            status_icon = "✅"
+        elif due and due < today:
+            status_icon = "⚠️"
+        else:
+            status_icon = "  "
+
+        # 优先级图标
+        pri_icon = "🔴" if priority == "P0" else ("🟡" if priority == "P1" else "  ")
+
+        due_str = f" (到期 {due})" if due else ""
+        new_str = f" 🆕" if created == today else ""
+        print(f"  {status_icon}{pri_icon} {i:2d}. [{contact}]{due_str} {task}{new_str}")
+    return 0
 
 
 def cmd_enrich(args) -> int:
@@ -186,6 +246,17 @@ def cmd_draft(args) -> int:
 
 def cmd_config(args) -> int:
     """配置管理：查看/设置 LLM provider。"""
+    if not args.action:
+        # 无子命令时显示 help（与其他子命令行为一致）
+        print("用法: social config {show,providers,set}")
+        print()
+        print("  show       显示当前 LLM 配置")
+        print("  providers  列出可用 LLM providers")
+        print("  set        设置配置（提示用环境变量）")
+        print()
+        print("试试: social config show")
+        return 0
+
     if args.action == "show":
         return _config_show()
     elif args.action == "set":
@@ -298,6 +369,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     # todos
     p_todos = subparsers.add_parser("todos", help="查看待办列表")
+    p_todos.add_argument("--all", action="store_true", help="显示全部（含已完成）")
+    p_todos.add_argument("--completed", action="store_true", help="只看已完成")
+    p_todos.add_argument("--recent", type=int, metavar="N", help="只看最近 N 天创建")
 
     # enrich
     p_enrich = subparsers.add_parser("enrich", help="批量画像补全")
