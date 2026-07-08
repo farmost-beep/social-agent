@@ -1,5 +1,56 @@
 # 版本日志
 
+## 3.0.0 (2026-07-08) — Social-CLI 独立化
+
+### 核心变更：解耦 Claude Code 依赖
+
+v3.0 起，social-agent 升级为 **social-cli**，可独立于 Claude Code 运行。
+
+#### 架构升级
+- 新增 `src/llm/` 模块（LLM 抽象层）
+  - `LLMClient` 抽象基类 + 5 类异常（LLMAuthError / LLMRateLimitError / LLMTimeoutError / LLMResponseError / LLMError）
+  - `ClaudeClient`（Anthropic API 直连，无需 SDK）
+  - `OpenAIClient`（OpenAI 兼容协议，支持 MiniMax / Azure OpenAI / 其他）
+  - `Router` 单例工厂，根据配置自动选择 provider
+- `src/ai.py` 改造
+  - 优先调用 LLM 抽象层（HTTP API）
+  - 失败降级到 `subprocess claude --print`（v2 兼容路径）
+  - 公开 API 签名不变（draft_message / generate_reminder），向后兼容
+- 新增 `social_cli/` 包
+  - `cli.py` argparse 统一入口（status / todos / enrich / health / draft / config / chat / version）
+  - `__main__.py` 支持 `python -m social_cli`
+- `setup.py` 新增 `social` console_scripts 入口点
+  - 保留 `social-agent` 旧命令（v2 兼容）
+  - 双入口点共存
+
+#### 新功能
+- LLM provider 切换：CLI 命令 `social config show/providers`，环境变量 `LLM_ENGINE`
+- `social chat <message>` 直接对话模式（无需启动 Claude Code）
+- `social draft -m "上下文" -c 联系人` 独立拟稿
+- 配置透明化：`social config show` 列出当前环境变量
+
+#### 改进
+- 测试覆盖率提升：v2.5 仅 15 个 → v3.0 共 76 个
+  - `tests/test_llm.py`：25 个（抽象层 + Claude + OpenAI + Router）
+  - `tests/test_ai.py`：14 个（mock LLMClient + subprocess 降级）
+  - `tests/test_cli.py`：22 个（argparse + 各子命令 + 错误处理）
+- 错误处理：失败返回友好字符串，不再抛异常中断
+- 重试机制：`complete_with_retry()` 指数退避（1s/2s/4s）
+
+#### 新增依赖
+- `httpx>=0.24`（HTTP 客户端，用于直接调用 LLM API）
+
+#### 破坏性变更
+- **无 API 破坏**：所有公开函数签名保持兼容
+- **行为变化**：v2 默认走 `claude --print`（subprocess）；v3 默认走 HTTP API（更可靠）
+
+#### 迁移指南
+- 见 `docs/MIGRATION.md`
+- 升级命令：`pip install --upgrade -e .`
+- 老用户无需修改任何调用代码
+
+---
+
 ## 2.5.0 (规划中)
 
 ### P0 — 批量画像补全管道

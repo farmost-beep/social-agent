@@ -4,6 +4,61 @@
 > 一个比你更记得住人情世故的AI管家。
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Version](https://img.shields.io/badge/version-3.0.0-blue.svg)](docs/CHANGELOG.md)
+
+## 🆕 v3.0 重大更新：Social-CLI 独立化
+
+从 v3.0 起，social-agent **不再依赖 Claude Code**，可作为独立 CLI 工具直接运行。
+
+### 核心变化
+
+| 维度 | v2.5 | v3.0 |
+|:----|:----:|:----:|
+| 是否必须 Claude Code | ✅ 是 | ❌ 不需要 |
+| 大模型可切换 | ❌ 仅 Claude | ✅ Claude / OpenAI / MiniMax |
+| 安装方式 | 手动克隆 | `pip install -e .` |
+| CLI 入口 | `python3 src/social.py` | `social`（全局命令）|
+| 测试覆盖 | 15 个 | **76 个** |
+
+### 快速体验 v3.0
+
+```bash
+# 1. 安装
+cd social-agent/
+pip install --break-system-packages -e .
+
+# 2. 设置 API Key（二选一）
+export ANTHROPIC_API_KEY=sk-ant-...        # Claude
+# 或
+export OPENAI_API_KEY=sk-...               # OpenAI / MiniMax
+export OPENAI_BASE_URL=https://api.minimaxi.com/v1  # MiniMax
+
+# 3. 试用
+social version
+social config show
+social chat "你好"
+social draft -m "上周见过张总聊项目" -c 张三
+```
+
+### 切换 LLM Provider
+
+```bash
+# 用 Claude（默认）
+export LLM_ENGINE=claude
+export ANTHROPIC_API_KEY=sk-ant-...
+
+# 切到 OpenAI
+export LLM_ENGINE=openai
+export OPENAI_API_KEY=sk-...
+
+# 切到 MiniMax
+export LLM_ENGINE=openai
+export OPENAI_BASE_URL=https://api.minimaxi.com/v1
+export OPENAI_MODEL=MiniMax-Text-01
+export OPENAI_API_KEY=...
+```
+
+详见 [docs/MIGRATION.md](docs/MIGRATION.md)
 
 ## ✨ 功能
 
@@ -20,7 +75,32 @@
 
 ## 🚀 快速开始
 
-### npm 安装（推荐）
+### pip 安装（v3.0 推荐） 🆕
+
+```bash
+# 1. 进入项目目录
+cd ~/.claude/skills/social-agent
+
+# 2. pip 安装（开发模式）
+pip install --break-system-packages -e .
+
+# 3. 设置 API Key（二选一）
+export ANTHROPIC_API_KEY=sk-ant-...        # Claude
+# 或
+export OPENAI_API_KEY=sk-...               # OpenAI / MiniMax
+
+# 4. 试用
+social version
+social status
+```
+
+### 一键脚本安装（v2 兼容）
+
+```bash
+bash <(curl -sL https://raw.githubusercontent.com/farmost-beep/social-agent/main/install.sh)
+```
+
+### npm 安装（v2 兼容）
 
 ```bash
 npx social-agent dashboard
@@ -28,13 +108,7 @@ npx social-agent dashboard
 
 首次运行自动安装 Python 依赖和初始化数据。
 
-### 一键脚本安装
-
-```bash
-bash <(curl -sL https://raw.githubusercontent.com/farmost-beep/social-agent/main/install.sh)
-```
-
-### 手动安装
+### 手动安装（v2 兼容）
 
 ```bash
 # 1. 克隆到 Claude Code skills 目录
@@ -77,6 +151,30 @@ python3 src/social.py dashboard
 
 ### 方式三：命令行
 
+#### v3.0 新统一命令（推荐） 🆕
+
+```bash
+# 全局可用（pip install -e . 之后）
+social version                       # 查看版本
+social status                        # 联系人状态
+social todos                         # 待办列表
+social config show                   # 查看 LLM 配置
+
+# AI 拟稿（无需启动 Claude Code）
+social draft -m "上周见过张总聊项目" -c 张三
+social draft -m "给李哥拜个早年" -c 李哥 --tone 正式
+
+# 与 AI 对话
+social chat "你好"
+
+# 守护进程
+python3 src/agent.py                  # 单次检查
+python3 src/agent.py --daemon         # 后台运行
+python3 src/agent.py --chat "消息"    # 自然语言交互
+```
+
+#### v2 兼容命令（仍可用）
+
 ```bash
 # 联系人管理
 python3 src/social.py add-contact <ID> --name NAME --role ROLE --tags TAGS --notes NOTES
@@ -100,11 +198,6 @@ python3 src/social.py check           # 检查14天+未联系的关系
 # AI消息拟稿
 python3 src/social.py draft <CONTACT> --tone 亲切|正式|简洁
 python3 src/social.py send <CONTACT> --tone 亲切
-
-# 守护进程（自动化推送）
-python3 src/agent.py                  # 单次检查
-python3 src/agent.py --daemon         # 后台运行
-python3 src/agent.py --chat "消息"    # 自然语言交互
 ```
 
 ## ⏰ 自动化推送
@@ -141,22 +234,40 @@ python3 src/agent.py --chat "消息"    # 自然语言交互
 
 ## 📖 命令一览
 
+### v3.0 新统一命令（推荐） 🆕
+
+`social` 是 v3.0 起的统一 CLI 入口（pip install -e . 后全局可用）：
+
 | 命令 | 说明 |
 |:----|:-----|
-| `add-contact` | 添加联系人 |
-| `edit-contact` | 编辑联系人信息 |
-| `search` | 搜索联系人 |
-| `log` | 记录互动，自动提取待办 |
-| `note` | 添加结构化记忆 |
-| `todos` | 查看待办列表 |
-| `done` | 完成待办 |
-| `draft` | AI拟稿，支持语气调节 |
-| `send` | 拟稿并推送到微信 |
-| `status` | 查看联系人状态或时间线 |
-| `dashboard` | 全局仪表盘 |
-| `check` | 检查14天+未联系的关系 |
-| `adjust` | 查看/执行强度调整建议 |
-| `birthdays` | 查看近期生日 |
+| `social version` | 查看版本信息 |
+| `social status` | 联系人状态总览 |
+| `social todos` | 待办列表 |
+| `social draft -m "上下文"` | AI 拟稿（独立模式，无需启动 Claude Code）|
+| `social chat "msg"` | 直接与 AI 对话 |
+| `social config show` | 查看 LLM 配置 |
+| `social config providers` | 列出可用 LLM providers |
+| `social enrich --batch 50` | 批量画像补全（v2.5 规划）|
+| `social health` | 关系健康分（v2.5 规划）|
+
+### v2 兼容命令（仍可用）
+
+| 命令 | 说明 |
+|:----|:-----|
+| `social-agent status` | 查看联系人状态或时间线 |
+| `social-agent dashboard` | 全局仪表盘 |
+| `social-agent add-contact` | 添加联系人 |
+| `social-agent edit-contact` | 编辑联系人信息 |
+| `social-agent search` | 搜索联系人 |
+| `social-agent log` | 记录互动，自动提取待办 |
+| `social-agent note` | 添加结构化记忆 |
+| `social-agent todos` | 查看待办列表 |
+| `social-agent done` | 完成待办 |
+| `social-agent draft` | AI 拟稿，支持语气调节 |
+| `social-agent send` | 拟稿并推送到微信 |
+| `social-agent check` | 检查14天+未联系的关系 |
+| `social-agent adjust` | 查看/执行强度调整建议 |
+| `social-agent birthdays` | 查看近期生日 |
 
 ## 🧠 设计理念
 
@@ -176,23 +287,37 @@ social-agent/
 ├── README.md              # 本文件
 ├── config/
 │   └── config.yaml        # 配置模板
-├── src/                   # Python 源码
-│   ├── social.py          # CLI入口
+├── src/                   # Python 源码（v2 兼容）
+│   ├── social.py          # CLI入口（social-agent 命令）
 │   ├── agent.py           # 守护进程
 │   ├── engine.py          # 核心引擎
-│   ├── ai.py              # AI拟稿
+│   ├── ai.py              # AI拟稿（v3 改造：双路径调用）
+│   ├── llm/               # ★ v3 新增：LLM 抽象层
+│   │   ├── base.py        # LLMClient 基类 + 异常体系
+│   │   ├── claude.py      # Anthropic API 直连
+│   │   ├── openai.py      # OpenAI 兼容（含 MiniMax）
+│   │   └── router.py      # 配置驱动路由
 │   ├── push.py            # 推送模块
 │   └── web.py             # Web界面
+├── social_cli/            # ★ v3 新增：统一 CLI 入口
+│   ├── __init__.py
+│   ├── __main__.py        # python -m social_cli
+│   └── cli.py             # argparse 子命令
 ├── data/                   # 用户数据（本地，不上云）
 ├── data_template/          # 空数据模板
 ├── docs/                   # 文档
 │   ├── SPEC.md            # 设计规约
 │   ├── CONFIG.md          # 配置指南
-│   └── CHANGELOG.md       # 版本日志
-├── tests/                  # 测试
+│   ├── CHANGELOG.md       # 版本日志
+│   └── MIGRATION.md       # ★ v3 新增：迁移指南
+├── tests/                  # 测试（v3 共 76 个）
+│   ├── test_engine.py     # 引擎核心（15）
+│   ├── test_llm.py        # ★ v3 新增（25）
+│   ├── test_ai.py         # ★ v3 新增（14）
+│   └── test_cli.py        # ★ v3 新增（22）
 ├── install.sh             # 一键安装脚本
 ├── requirements.txt
-├── setup.py
+├── setup.py               # ★ v3 更新：双入口点
 └── LICENSE
 ```
 
@@ -211,11 +336,21 @@ social-agent/
 
 ## 🖇️ 依赖
 
+**核心依赖（必需）：**
 - Python 3.9+
-- Claude Code（AI拟稿引擎）
-- 微信推送：cc-connect 桥接（可选）
-- 关系图谱：matplotlib + networkx（可选）
+- httpx ≥ 0.24（v3.0 LLM 抽象层）
+- pyyaml ≥ 6.0
+
+**LLM Provider（至少一个）：**
+- Claude：设置 `ANTHROPIC_API_KEY` 环境变量
+- OpenAI / MiniMax / 其他：设置 `OPENAI_API_KEY` + `OPENAI_BASE_URL` 环境变量
+
+**可选依赖：**
+- ~~Claude Code（v3.0 起不再必需，可作为 LLM Client 的兼容兜底）~~
+- 微信推送：cc-connect 桥接
+- 关系图谱：matplotlib + networkx
+- Web 界面：flask ≥ 2.0（`pip install -e .[web]`）
 
 ## 📄 许可证
 
-Apache 2.0
+MIT
