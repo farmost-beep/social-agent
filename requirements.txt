@@ -4,5 +4,8 @@
 # 核心引擎
 pyyaml>=6.0
 
+# LLM HTTP客户端（v3.0 social-cli 必需）
+httpx>=0.24
+
 # Web界面（仅运行 web.py 时需要）
 # flask>=2.0
