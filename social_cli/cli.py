@@ -716,6 +716,113 @@ def cmd_chat(args) -> int:
         return 1
 
 
+def cmd_send(args) -> int:
+    """通过 Mac 微信推送消息（v3.1 新增）"""
+    if not args.message:
+        print("✗ 请提供消息内容（-m）")
+        return 1
+
+    if _ensure_project_path() is None:
+        print("✗ 找不到 social-agent 项目根")
+        return 1
+
+    try:
+        from social_cli.push import push_to_wechat, check_available, find_contact_weixin_id
+    except ImportError as e:
+        print(f"✗ 无法加载 push 模块: {e}")
+        return 1
+
+    # 如果未指定 contact，用 draft 先拟稿
+    contact = args.contact
+    if not contact:
+        print("✗ 请指定联系人（-c 姓名）")
+        return 1
+
+    # 安全确认：默认不真发，除非 --confirm
+    if not args.confirm:
+        print(f"\n📤 将发送消息到微信：")
+        print(f"  收件人: {contact}")
+        print(f"  消息:   {args.message[:100]}")
+        print()
+        print("⚠️  使用 --confirm 确认发送")
+        print("    social send -c \"联系人\" -m \"消息\" --confirm")
+        return 1
+
+    result = push_to_wechat(contact, args.message)
+    if result["success"]:
+        print(f"✓ 已发送到「{contact}」: {args.message[:60]}")
+        return 0
+    else:
+        print(f"✗ 发送失败: {result.get('error', '未知错误')}")
+        return 1
+
+
+def cmd_wxid_bind(args) -> int:
+    """绑定联系人的微信 wxid（v3.1 新增）"""
+    if not args.contact or not args.wxid:
+        print("✗ 用法: social wxid-bind <联系人> <wxid>")
+        return 1
+
+    if _ensure_project_path() is None:
+        print("✗ 找不到 social-agent 项目根")
+        return 1
+
+    try:
+        from engine import _load, _save, CONTACTS_FILE
+    except ImportError:
+        print("✗ 无法加载 engine 模块")
+        return 1
+
+    contacts = _load(CONTACTS_FILE)
+    if not isinstance(contacts, list):
+        print("✗ contacts.json 格式异常")
+        return 1
+
+    # 找联系人
+    found = [c for c in contacts if c.get("name", "").strip() == args.contact]
+    if not found:
+        print(f"✗ 未找到联系人「{args.contact}」")
+        return 1
+
+    for c in found:
+        if "platforms" not in c or not isinstance(c.get("platforms"), dict):
+            c["platforms"] = {}
+        c["platforms"]["weixin"] = args.wxid
+        print(f"✓ 已绑定「{c['name']}」→ wxid: {args.wxid}")
+
+    _save(CONTACTS_FILE, contacts)
+    print(f"✓ 已保存到 {CONTACTS_FILE.name}")
+    return 0
+
+
+def cmd_send_check(args) -> int:
+    """检查推送环境是否就绪（v3.1 新增）"""
+    if _ensure_project_path() is None:
+        print("✗ 找不到 social-agent 项目根")
+        return 1
+    try:
+        from social_cli.push import check_available, find_contact_weixin_id
+    except ImportError as e:
+        print(f"✗ 无法加载 push 模块: {e}")
+        return 1
+
+    status = check_available()
+    print(f"\n📤 微信推送环境检查\n")
+    for c in status["checks"]:
+        print(f"  {c['status']} {c['check']}")
+    print(f"\n  总体可用性: {'✅ 可用' if status['available'] else '❌ 部分不可用'}")
+
+    # 如果是某个联系人
+    if args.contact:
+        wid = find_contact_weixin_id(args.contact)
+        if wid:
+            print(f"  📱 联系人「{args.contact}」微信ID: {wid[:30]}")
+        else:
+            print(f"  ⚠️ 未找到「{args.contact}」的微信ID")
+
+    return 0
+
+
 def cmd_version(args) -> int:
     """显示版本"""
     print(f"social-cli {__version__}")
@@ -781,6 +888,21 @@ def build_parser() -> argparse.ArgumentParser:
     p_chat = subparsers.add_parser("chat", help="与AI对话")
     p_chat.add_argument("message", help="消息内容")
 
+    # send (v3.1)
+    p_send = subparsers.add_parser("send", help="通过 Mac 微信推送消息（v3.1）")
+    p_send.add_argument("-c", "--contact", required=True, help="微信联系人名称")
+    p_send.add_argument("-m", "--message", required=True, help="消息内容")
+    p_send.add_argument("--confirm", action="store_true", help="确认发送（默认不真发）")
+
+    # send-check (v3.1)
+    p_check = subparsers.add_parser("send-check", help="检查推送环境（v3.1）")
+    p_check.add_argument("contact", nargs="?", help="联系人名称（可选）")
+
+    # wxid-bind (v3.1)
+    p_wxid = subparsers.add_parser("wxid-bind", help="绑定联系人 wxid（v3.1）")
+    p_wxid.add_argument("contact", help="联系人名称")
+    p_wxid.add_argument("wxid", help="微信 wxid（含 @im.wechat 后缀）")
+
     # version
     subparsers.add_parser("version", help="显示版本")
 
@@ -798,6 +920,9 @@ _COMMANDS = {
     "draft": cmd_draft,
     "config": cmd_config,
     "chat": cmd_chat,
+    "send": cmd_send,
+    "send-check": cmd_send_check,
+    "wxid-bind": cmd_wxid_bind,
     "version": cmd_version,
 }
 
