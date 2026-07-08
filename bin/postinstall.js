@@ -30,8 +30,8 @@ try {
 }
 
 // 2. 安装 Python 依赖
-console.log('\n:: 安装 Python 依赖...');
-run(`pip3 install -r requirements.txt -q`) || run(`pip install -r requirements.txt -q`);
+console.log('\n:: 安装 Python 包（含 social / social-agent 命令入口）...');
+run(`pip3 install -e . -q`) || run(`pip install -e . -q`) || run(`pip3 install -r requirements.txt -q`);
 console.log('✓ 依赖安装完成');
 
 // 3. 初始化数据目录（安全模式）
@@ -85,4 +85,5 @@ try {
 }
 
 console.log('\n✓ social-agent 安装完成！');
-console.log(`  运行: npx social-agent dashboard\n`);
+console.log(`  运行: npx social-agent status     # v2 兼容命令`);
+console.log(`  运行: npx @farmost/social-agent   # v3 推荐（用 social CLI）\n`);
