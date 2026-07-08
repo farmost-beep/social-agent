@@ -6,6 +6,7 @@
 
 SOCIAL_DIR="/Users/cyingfang/.claude/skills/social-agent"
 DATA_DIR="$SOCIAL_DIR/data"
+export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:$PATH"
 NODE_SCRIPT="/Users/cyingfang/claude/scripts/direct_send.mjs"
 SELF_WXID="o9cq80yA9s4SlCPQNAYivVNJMD50@im.wechat"
 
