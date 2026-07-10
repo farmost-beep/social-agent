@@ -312,3 +312,111 @@ def _rule_based_leverage(contact, goals, directions):
 
     how = f"基于 {relation or '关系'} 维度的{inferred_goals[0]}资源互换"
     return {"goals": inferred_goals, "how": how, "direction": direction}
+
+
+# ── 建议引擎 (SPEC v4 §19) ──
+
+def draft_advise(candidate):
+    """把单个候选转成"联系谁+为什么+聊什么"三元组建议。
+
+    Args:
+        candidate: advise_candidates() 返回的 dict
+            含 contact/signals/score/days_since/last_interaction/leverage/has_birthday/has_todo
+
+    Returns:
+        dict: {"who": str, "why": str, "what": str, "score": int}
+        LLM 失败时降级为基于信号的规则拼接。
+    """
+    contact = candidate["contact"]
+    name = contact.get("name", contact.get("id", "?"))
+    signals = candidate.get("signals", [])
+    last_interaction = candidate.get("last_interaction", "")
+    leverage = candidate.get("leverage")
+    has_birthday = candidate.get("has_birthday")
+    birthday_info = candidate.get("birthday_info") or {}
+    has_todo = candidate.get("has_todo")
+    todo_info = candidate.get("todo_info") or {}
+    days_since = candidate.get("days_since", 9999)
+
+    # ── why: 信号拼接（规则，不用 LLM） ──
+    why = "；".join(signals) if signals else "常规维护"
+
+    # ── what: LLM 生成"聊什么" ──
+    leverage_str = ""
+    if leverage and leverage.get("confirmed"):
+        leverage_str = f"目标锚定: {','.join(leverage.get('goals', []))} — {leverage.get('how', '')}"
+
+    todo_str = ""
+    if has_todo and todo_info:
+        todo_str = f"有待办: {todo_info.get('task', todo_info.get('content', ''))}"
+
+    bday_str = ""
+    if has_birthday and birthday_info:
+        bday_str = f"即将生日: {birthday_info.get('date', '?')}"
+
+    prompt = f"""你是社交关系经营参谋。基于以下信号，为用户生成一条具体的"聊什么"建议（一句话，可执行）。
+
+联系人：{name}
+关系：{contact.get('relation', '')} / {contact.get('sub_relation', '')}
+上次互动：{last_interaction or '无'}（{days_since}天前）
+信号：{'; '.join(signals) if signals else '无'}
+{leverage_str}
+{bday_str}
+{todo_str}
+
+要求：
+1. 只输出一句话，告诉用户"跟这个人聊什么"
+2. 具体、可执行（不要"打个招呼"这种空话）
+3. 基于上次互动内容跟进，或基于锚定目标推进
+4. 不超过 50 字"""
+
+    text = _call_llm(prompt, timeout=15)
+    if text:
+        what = text.strip().strip('"').strip('「').strip('」')
+        if what:
+            return {"who": name, "why": why, "what": what, "score": candidate.get("score", 0)}
+
+    # 降级：规则拼接"聊什么"
+    what = _rule_based_what(candidate)
+    return {"who": name, "why": why, "what": what, "score": candidate.get("score", 0)}
+
+
+def _rule_based_what(candidate):
+    """规则降级：基于信号拼接"聊什么"。"""
+    contact = candidate["contact"]
+    name = contact.get("name", "?")
+    last_interaction = candidate.get("last_interaction", "")
+    has_birthday = candidate.get("has_birthday")
+    has_todo = candidate.get("has_todo")
+    todo_info = candidate.get("todo_info") or {}
+    leverage = candidate.get("leverage")
+    days_since = candidate.get("days_since", 9999)
+
+    if has_birthday:
+        return f"准备生日祝福，提前一天发送"
+    if has_todo and todo_info:
+        task = todo_info.get("task", todo_info.get("content", ""))
+        return f"跟进待办: {task[:40]}"
+    if leverage and leverage.get("confirmed"):
+        return f"围绕{leverage.get('goals', ['事业'])[0]}推进: {leverage.get('how', '日常经营')[:40]}"
+    if last_interaction:
+        return f"跟进上次话题: {last_interaction[:40]}"
+    if days_since >= 21:
+        return f"太久没联系，发个近况问候"
+    return f"日常问候，分享近期动态"
+
+
+def generate_advise_report(candidates, top=5):
+    """生成本周经营简报（SPEC v4 §19.2）。
+
+    Args:
+        candidates: advise_candidates() 返回的列表
+        top: 取前 N 条（SPEC §19.2: 3-5 封顶）
+
+    Returns:
+        list of {"who", "why", "what", "score"} 三元组
+    """
+    report = []
+    for c in candidates[:top]:
+        report.append(draft_advise(c))
+    return report

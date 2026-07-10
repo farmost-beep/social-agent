@@ -754,10 +754,11 @@ def cmd_anchor(args) -> int:
 
     # ── 单人锚定 ──
     if args.contact:
-        cid, c = resolve_contact(args.contact)
+        c, _ = resolve_contact(args.contact)
         if not c:
             print(f"✗ 未找到联系人: {args.contact}")
             return 1
+        cid = c["id"]
         if contact_tier(c) != "core":
             print(f"⚠ {c.get('name', cid)} 在储备池（强度{c.get('strength',1)}），SPEC §18.3 仅锚定 core 层")
             if not args.force:
@@ -871,6 +872,134 @@ def cmd_anchor(args) -> int:
     print(f"  总进度: {stats['anchored']}/{stats['core_total']} ({stats['anchored_pct']}%)")
     if stats["pending"] > 0:
         print(f"  下一步: social anchor  (继续锚定下一批)")
+    return 0
+
+
+# ── advise: 建议引擎 (SPEC v4 §19) ──
+
+def cmd_advise(args) -> int:
+    """本周经营建议（SPEC v4 §19）—— 联系谁+为什么+聊什么三元组。"""
+    if _ensure_project_path() is None:
+        print("✗ 找不到 social-agent 项目根")
+        return 1
+
+    from engine import advise_candidates
+    from ai import generate_advise_report
+
+    top = args.top
+    tier = "all" if args.all else "core"
+    candidates = advise_candidates(top=top, tier=tier)
+    if not candidates:
+        print("\n✓ 当前无经营建议候选（核心圈均近期已联系且无待办/生日信号）")
+        return 0
+
+    report = generate_advise_report(candidates, top=top)
+
+    today = __import__("datetime").date.today().isoformat()
+    print(f"\n📋 本周经营建议（{today}）—— SPEC v4 §19")
+    print(f"{'─'*60}")
+    for i, r in enumerate(report, 1):
+        print(f"\n{i}. 联系 {r['who']} —— {r['why']}")
+        print(f"   → {r['what']}")
+        cid = next((c["contact"]["id"] for c in candidates if c["contact"].get("name") == r["who"]), None)
+        if cid:
+            print(f"   拟稿: social draft -c {cid} -m \"{r['what'][:30]}\"")
+
+    print(f"\n{'─'*60}")
+    print(f"  共 {len(report)} 条建议 · 3-5 条封顶（SPEC §19.2）")
+    print(f"  建议仅建议，不自动创建待办（核心规则3精神延伸）")
+    if args.push:
+        print(f"\n  📱 推送模式：尝试推送到微信...")
+        # 复用 push 框架
+        try:
+            from push import send_message
+            msg = "\n".join(f"{i}. {r['who']}: {r['what']}" for i, r in enumerate(report, 1))
+            send_message(f"📋 本周经营建议\n{msg}")
+            print("  ✓ 已推送")
+        except Exception as e:
+            print(f"  ⚠ 推送失败: {e}")
+    return 0
+
+
+# ── outcomes: 兑现追踪 (SPEC v4 §20) ──
+
+def cmd_outcomes(args) -> int:
+    """兑现追踪查询（SPEC v4 §20）—— timeline type=outcome 记录。"""
+    if _ensure_project_path() is None:
+        print("✗ 找不到 social-agent 项目根")
+        return 1
+
+    from engine import list_outcomes, outcome_stats, add_outcome, resolve_contact
+
+    # ── --add 模式：记录新成果 ──
+    if args.add:
+        if not args.contact:
+            print("✗ --add 需要指定联系人（位置参数）")
+            print("  用法: social outcomes <联系人> --add --summary '...'")
+            return 1
+        if not args.summary:
+            print("✗ --add 需要 --summary 描述成果")
+            return 1
+        c, _ = resolve_contact(args.contact)
+        if not c:
+            print(f"✗ 未找到联系人: {args.contact}")
+            return 1
+        cid = c["id"]
+        rec = add_outcome(cid, args.summary, goal=args.goal, date_str=args.date)
+        print(f"✓ 已记录成果: {rec['id']}")
+        print(f"  联系人: {c.get('name', cid)}")
+        print(f"  摘要:   {args.summary}")
+        if args.goal:
+            print(f"  目标:   {args.goal}")
+        return 0
+
+    # ── --stats 模式 ──
+    if args.stats:
+        s = outcome_stats(year=args.year)
+        print(f"\n📊 兑现追踪统计（SPEC v4 §20）")
+        print(f"{'─'*40}")
+        print(f"  成果总数: {s['total']}")
+        if s["by_goal"]:
+            print(f"\n  按目标维度:")
+            for g, n in s["by_goal"].items():
+                print(f"    {g}: {n}")
+        if s["by_contact"]:
+            print(f"\n  按联系人 (前10):")
+            for c, n in list(s["by_contact"].items())[:10]:
+                print(f"    {c}: {n}")
+        if s["by_month"]:
+            print(f"\n  按月份:")
+            for m, n in s["by_month"].items():
+                print(f"    {m}: {n}")
+        if s["total"] == 0:
+            print("\n  尚无成果记录。用 --add --contact <人> --summary '...' 记录第一笔")
+        return 0
+
+    # ── 查询模式 ──
+    contact_id = None
+    if args.contact:
+        c, _ = resolve_contact(args.contact)
+        if not c:
+            print(f"✗ 未找到联系人: {args.contact}")
+            return 1
+        contact_id = c["id"]
+        print(f"\n📌 {c.get('name', contact_id)} 的成果记录:")
+    else:
+        print(f"\n📌 兑现追踪记录（SPEC v4 §20）")
+
+    outcomes = list_outcomes(contact=contact_id, goal=args.goal, year=args.year, limit=args.limit)
+    if not outcomes:
+        print("  无记录")
+        if not args.contact:
+            print("  用 --add --contact <人> --summary '...' 记录成果")
+        return 0
+
+    print(f"{'─'*60}")
+    for r in outcomes:
+        goal_tag = f" [{r.get('goal', '?')}]" if r.get("goal") else ""
+        print(f"\n  {r['date']}{goal_tag} — {r.get('contact', '?')}")
+        print(f"    {r.get('summary', '')}")
+    print(f"\n  共 {len(outcomes)} 条" + (f"（限制 {args.limit}）" if args.limit and len(outcomes) == args.limit else ""))
     return 0
 
 
@@ -1286,6 +1415,23 @@ def build_parser() -> argparse.ArgumentParser:
     p_anchor.add_argument("--dry-run", action="store_true", help="只打印建议不写入")
     p_anchor.add_argument("--force", action="store_true", help="强制重新锚定已锚定/储备池联系人")
 
+    # advise (v4.0 §19)
+    p_advise = subparsers.add_parser("advise", help="本周经营建议（v4.0 §19）")
+    p_advise.add_argument("--top", type=int, default=5, metavar="N", help="建议条数（默认 5，SPEC §19.2 封顶 3-5）")
+    p_advise.add_argument("--all", action="store_true", help="扫全量联系人（默认仅核心圈）")
+    p_advise.add_argument("--push", action="store_true", help="推送到微信")
+
+    # outcomes (v4.0 §20)
+    p_outcomes = subparsers.add_parser("outcomes", help="兑现追踪（v4.0 §20）")
+    p_outcomes.add_argument("contact", nargs="?", help="过滤联系人")
+    p_outcomes.add_argument("--goal", help="过滤目标维度（事业/投资/家庭/健康/AI能力/知识）")
+    p_outcomes.add_argument("--year", type=int, help="过滤年份")
+    p_outcomes.add_argument("--limit", type=int, default=50, metavar="N", help="最多返回条数（默认 50）")
+    p_outcomes.add_argument("--stats", action="store_true", help="统计模式")
+    p_outcomes.add_argument("--add", action="store_true", help="记录新成果（需 --contact --summary）")
+    p_outcomes.add_argument("--summary", help="成果摘要（--add 模式）")
+    p_outcomes.add_argument("--date", help="成果日期（--add 模式，默认今日）")
+
     # draft
     p_draft = subparsers.add_parser("draft", help="AI拟稿")
     p_draft.add_argument("-m", "--message", required=True, help="上下文摘要")
@@ -1342,6 +1488,8 @@ _COMMANDS = {
     "chat": cmd_chat,
     "remind": cmd_remind,
     "anchor": cmd_anchor,
+    "advise": cmd_advise,
+    "outcomes": cmd_outcomes,
     "send": cmd_send,
     "send-check": cmd_send_check,
     "wxid-bind": cmd_wxid_bind,

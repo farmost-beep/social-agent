@@ -31,6 +31,26 @@
 
 **测试**：新增 `tests/test_v40_anchor.py` 30 用例（goals 加载/leverage 读写/排序/统计/JSON 解析/规则降级/整合），总计 167 全部通过。
 
+### 阶段4+5 落地（2026-07-10，建议引擎 + 兑现追踪）
+
+**阶段4 建议引擎（§19）**：
+- **`engine.advise_candidates()`**：聚合五信号源打分排序——冷却状态（14/21天→黄/红 +20/+30）、生日（+35）、leverage 锚定（+15）、pending 待办（+25）、强度（×2）；self/reserve 排除；按 score 降序取 top N
+- **`ai.draft_advise()`**：把候选转成"联系谁+为什么+聊什么"三元组
+  - why = 信号拼接（规则，可追溯）
+  - what = LLM 生成一句话（失败降级 `_rule_based_what`：生日>待办>leverage>上次话题>冷关系兜底）
+- **`social advise` 命令**：`--top 5`（SPEC §19.2 封顶 3-5）/ `--all`（扫全量）/ `--push`（微信推送）；每条附 `social draft -c <id> -m "..."` 衔接命令；不自动创建待办
+
+**阶段5 兑现追踪（§20）**：
+- **`engine.add_outcome()`**：timeline type=outcome 记录，含 goal 关联六维
+- **`engine.list_outcomes()`**：按联系人/目标维度/年份过滤，日期降序
+- **`engine.outcome_stats()`**：按目标维度/联系人/月份分布统计
+- **`social outcomes` 命令**：三态——查询（默认）/`--add`（记录新成果，需位置参数联系人+`--summary`）/`--stats`（统计）；不算 ROI（原则七）
+
+**修复**：
+- 修复 `cmd_anchor`/`cmd_outcomes` 中 `resolve_contact` 解包错误（返回 `(contact_dict, match_type)` 非 `(id, dict)`）
+
+**测试**：新增 `tests/test_v40_advise_outcome.py` 34 用例（outcome 读写/统计/advise 辅助函数/候选排序/三元组生成/规则降级/报告整合），总计 201 全部通过。
+
 ### 前置地基（v3.1，可独立发版）
 - 文档一致性修复（SPEC_v3 §11 状态表过时：health 简化版、enrich --web 实际已实现）
 - 落地 `enrichment_log.json` 写入

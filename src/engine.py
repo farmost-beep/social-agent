@@ -917,3 +917,216 @@ def anchor_stats():
         "by_goal": by_goal,
         "by_direction": by_direction,
     }
+
+
+# ── 兑现追踪 outcome (SPEC v4 §20) ──
+
+def add_outcome(contact, summary, goal=None, date_str=None):
+    """记录一条 outcome（成果）到 timeline。
+
+    SPEC v4 §20.1: timeline type=outcome，含 goal 关联。
+    只做可追溯记录，不算 ROI（原则七）。
+
+    Args:
+        contact: 联系人 ID
+        summary: 成果摘要（如"经张总引荐认识XX行科技部负责人"）
+        goal: 关联的六维目标之一（可空）
+        date_str: 日期（默认今日）
+
+    Returns:
+        timeline record dict
+    """
+    records = _load(TIMELINE_FILE)
+    record = {
+        "id": f"t-{uuid.uuid4().hex[:6]}",
+        "date": date_str or date.today().isoformat(),
+        "contact": contact,
+        "type": "outcome",
+        "summary": summary,
+        "goal": goal,
+        "key_points": [],
+        "pending": "",
+        "created": datetime.now().isoformat(),
+    }
+    records.append(record)
+    _save(TIMELINE_FILE, records)
+    return record
+
+
+def list_outcomes(contact=None, goal=None, year=None, limit=None):
+    """查询 outcome 记录（SPEC v4 §20.2）。
+
+    Args:
+        contact: 过滤联系人 ID
+        goal: 过滤目标维度
+        year: 过滤年份（int 或 str）
+        limit: 最多返回条数
+
+    Returns:
+        list of timeline records (type=outcome)，按日期降序
+    """
+    records = _load(TIMELINE_FILE)
+    outcomes = [r for r in records if r.get("type") == "outcome"]
+    if contact:
+        outcomes = [r for r in outcomes if r.get("contact") == contact]
+    if goal:
+        outcomes = [r for r in outcomes if r.get("goal") == goal]
+    if year:
+        year_str = str(year)
+        outcomes = [r for r in outcomes if r.get("date", "").startswith(year_str)]
+    outcomes.sort(key=lambda r: r.get("date", ""), reverse=True)
+    if limit:
+        outcomes = outcomes[:limit]
+    return outcomes
+
+
+def outcome_stats(year=None):
+    """返回 outcome 统计（按目标维度/按联系人/按月份分布）。"""
+    outcomes = list_outcomes(year=year)
+    by_goal = {}
+    by_contact = {}
+    by_month = {}
+    for r in outcomes:
+        g = r.get("goal") or "未标注"
+        by_goal[g] = by_goal.get(g, 0) + 1
+        c = r.get("contact", "?")
+        by_contact[c] = by_contact.get(c, 0) + 1
+        m = r.get("date", "")[:7]
+        if m:
+            by_month[m] = by_month.get(m, 0) + 1
+    return {
+        "total": len(outcomes),
+        "by_goal": dict(sorted(by_goal.items(), key=lambda x: -x[1])),
+        "by_contact": dict(sorted(by_contact.items(), key=lambda x: -x[1])),
+        "by_month": dict(sorted(by_month.items())),
+    }
+
+
+# ── 建议引擎 advise (SPEC v4 §19) ──
+
+def _days_since_last(contact):
+    """距上次互动天数（基于 timeline）。"""
+    cid = contact.get("id")
+    if not cid:
+        return 9999
+    tls = list_timeline(contact=cid, days=9999)
+    if not tls:
+        return 9999
+    last_date = tls[0].get("date", "")
+    if not last_date:
+        return 9999
+    try:
+        d = date.fromisoformat(last_date)
+        return (date.today() - d).days
+    except (ValueError, TypeError):
+        return 9999
+
+
+def _has_upcoming_birthday(contact, days=14):
+    """未来 N 天内是否有生日。"""
+    cid = contact.get("id")
+    if not cid:
+        return False, None
+    bdays = get_birthdays(days=days)
+    for b in bdays:
+        if b.get("id") == cid or b.get("contact") == cid:
+            return True, b
+    return False, None
+
+
+def _has_pending_todo(contact):
+    """该联系人是否有 pending 待办。"""
+    cid = contact.get("id")
+    if not cid:
+        return False, None
+    todos = list_todos(status="pending")
+    for t in todos:
+        if t.get("contact") == cid:
+            return True, t
+    return False, None
+
+
+def advise_candidates(top=5, tier="core"):
+    """聚合多信号源生成本周经营建议候选（SPEC v4 §19.1）。
+
+    信号源（均为已有数据，原则六：信号先行）：
+    1. 冷却状态（14/21天未联系 → 红/黄）
+    2. health 分（低分优先）
+    3. important_dates（未来14天生日）
+    4. leverage 锚定（有锚定的优先——why 已明确）
+    5. timeline 上下文（上次聊什么→聊什么）
+    6. todos（有 pending 待办优先）
+
+    排序：综合得分降序，取 top N（SPEC §19.2: 3-5 条封顶）。
+
+    Returns:
+        list of dict: [{"contact": {...}, "signals": [...], "score": N, "last_interaction": str, "leverage": {...}|None}]
+    """
+    contacts = list_contacts(tier=tier)
+    candidates = []
+
+    for c in contacts:
+        if c.get("relation") == "self":
+            continue
+        cid = c["id"]
+        signals = []
+        score = 0
+
+        # 信号1: 冷却状态
+        days_since = _days_since_last(c)
+        if days_since >= 21:
+            signals.append(f"{days_since}天未联系🔴")
+            score += 30
+        elif days_since >= 14:
+            signals.append(f"{days_since}天未联系🟡")
+            score += 20
+        elif days_since == 9999:
+            signals.append("从未联系🔴")
+            score += 25
+        elif days_since <= 3:
+            # 刚联系过，降权
+            score -= 10
+
+        # 信号2: 生日
+        has_bday, bday_info = _has_upcoming_birthday(c, days=14)
+        if has_bday:
+            signals.append(f"即将生日（{bday_info.get('date', '?')}）")
+            score += 35
+
+        # 信号3: leverage 锚定（有锚定的优先——why 已明确）
+        lev = c.get("leverage")
+        if lev and lev.get("confirmed"):
+            goals_str = "/".join(lev.get("goals", []))
+            signals.append(f"锚定[{goals_str}]")
+            score += 15
+
+        # 信号4: pending 待办
+        has_todo, todo_info = _has_pending_todo(c)
+        if has_todo:
+            task = todo_info.get("task", todo_info.get("content", ""))
+            signals.append(f"待办: {task[:30]}")
+            score += 25
+
+        # 信号5: 强度加分（高强度关系更值得维护）
+        s = c.get("strength", 1)
+        score += s * 2
+
+        if score > 0 and signals:
+            # 获取上次互动摘要
+            tls = list_timeline(contact=cid, days=9999)
+            last_summary = tls[0].get("summary", "") if tls else ""
+            candidates.append({
+                "contact": c,
+                "signals": signals,
+                "score": score,
+                "days_since": days_since,
+                "last_interaction": last_summary,
+                "leverage": lev,
+                "has_birthday": has_bday,
+                "birthday_info": bday_info,
+                "has_todo": has_todo,
+                "todo_info": todo_info,
+            })
+
+    candidates.sort(key=lambda x: -x["score"])
+    return candidates[:top]
