@@ -842,6 +842,17 @@ def cmd_anchor(args) -> int:
             skipped_count += 1
             continue
 
+        # --confirm: 跳过交互直接写入 AI 建议
+        if args.confirm:
+            today = __import__("datetime").date.today().isoformat()
+            ok, msg = set_leverage(cid, suggestion["goals"], suggestion["how"], suggestion["direction"], confirmed=today)
+            print(f"  {'✓' if ok else '✗'} {msg}")
+            if ok:
+                confirmed_count += 1
+            else:
+                skipped_count += 1
+            continue
+
         ans = _prompt_confirm()
         if ans == "q":
             print("\n  已退出")
