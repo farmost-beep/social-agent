@@ -177,3 +177,138 @@ def generate_reminder(contact_name, days_since, context_summary):
         # 降级：与 v2 行为一致
         return f"{days_since}天没联系{contact_name}了"
     return text.strip()
+
+
+# ── 目标锚定建议 (SPEC v4 §18) ──
+
+def suggest_leverage(contact, goals, timeline_summary="", directions=None):
+    """为联系人生成 leverage 锚定建议。
+
+    Args:
+        contact: 联系人 dict（含 name/tags/relation/notes 等）
+        goals: 可选目标维度列表（来自 goals.yaml）
+        timeline_summary: 最近互动摘要（可空）
+        directions: 可选 direction 枚举列表
+
+    Returns:
+        dict: {"goals": [...], "how": "...", "direction": "..."}
+        LLM 失败时降级为基于 tags/relation 的规则建议。
+    """
+    if directions is None:
+        directions = ["我求于他", "他求于我", "互惠"]
+
+    name = contact.get("name", contact.get("id", "?"))
+    relation = contact.get("relation", contact.get("role", ""))
+    sub = contact.get("sub_relation", "")
+    tags = contact.get("tags", [])
+    notes = contact.get("notes", "")
+    if isinstance(notes, list):
+        notes = " ".join(str(n) for n in notes)
+    company = contact.get("company", "")
+    title = contact.get("title", "")
+
+    prompt = f"""你是社交关系经营参谋。基于以下联系人信息，建议该联系人撬动用户哪些人生目标维度，以及具体撬动方式。
+
+用户的人生目标维度（从中选 1-3 个）：{", ".join(goals)}
+direction 枚举（三选一）：{", ".join(directions)}
+
+联系人：{name}
+关系：{relation} / {sub}
+公司/职位：{company} / {title}
+标签：{", ".join(tags) if tags else "无"}
+备注：{notes[:200] if notes else "无"}
+最近互动：{timeline_summary or "无"}
+
+只输出一行 JSON，格式：
+{{"goals": ["维度1"], "how": "一句话具体撬动方式", "direction": "互惠"}}
+
+要求：
+1. goals 必须从给定维度中选，1-3 个
+2. how 一句话、具体、可执行（不要空话如"多联系"）
+3. direction 三选一
+4. 只输出 JSON，不要其他文字"""
+
+    text = _call_llm(prompt, timeout=20)
+    if text:
+        suggestion = _parse_leverage_json(text, goals, directions)
+        if suggestion:
+            return suggestion
+
+    # 降级：基于 tags/relation 的规则推断
+    return _rule_based_leverage(contact, goals, directions)
+
+
+def _parse_leverage_json(text, valid_goals, valid_directions):
+    """从 LLM 输出解析 leverage JSON，校验字段。失败返回 None。"""
+    import re as _re
+    # 提取第一个 {...} 块
+    m = _re.search(r"\{[^{}]*\}", text, _re.DOTALL)
+    if not m:
+        return None
+    try:
+        data = json.loads(m.group(0))
+    except (json.JSONDecodeError, ValueError):
+        return None
+    goals = data.get("goals")
+    how = data.get("how")
+    direction = data.get("direction")
+    if not isinstance(goals, list) or not goals or not how or direction not in valid_directions:
+        return None
+    # 过滤非法目标维度
+    goals = [g for g in goals if g in valid_goals]
+    if not goals:
+        return None
+    return {"goals": goals, "how": str(how).strip()[:120], "direction": direction}
+
+
+def _rule_based_leverage(contact, goals, directions):
+    """规则降级：基于 tags/relation 推断 leverage。"""
+    tags = set(t.lower() for t in contact.get("tags", []))
+    relation = contact.get("relation", contact.get("role", "")).lower()
+    sub = contact.get("sub_relation", "").lower()
+    notes = str(contact.get("notes", "")).lower()
+    name = contact.get("name", contact.get("id", "?"))
+
+    inferred_goals = []
+    # 事业：同行/创业/项目/金融科技/客户
+    if any(k in tags for k in ("同行", "创业", "合作", "项目", "金融科技", "客户")) \
+       or relation in ("同行", "合作", "创业") \
+       or any(k in sub for k in ("银行", "金融", "科技", "证券")):
+        if "事业" in goals:
+            inferred_goals.append("事业")
+    # 投资：投资/股票/理财
+    if any(k in tags for k in ("投资", "股票", "理财", "a股", "港股")) or "投资" in notes:
+        if "投资" in goals:
+            inferred_goals.append("投资")
+    # AI能力：ai/技术/科技
+    if any(k in tags for k in ("ai", "技术", "科技", "llm", "python")) or "ai" in notes:
+        if "AI能力" in goals:
+            inferred_goals.append("AI能力")
+    # 知识：校友/学习/读书
+    if any(k in tags for k in ("校友", "读书", "学习")) or relation == "校友":
+        if "知识" in goals:
+            inferred_goals.append("知识")
+    # 家庭：家人
+    if relation in ("family", "家人") or "家人" in tags:
+        if "家庭" in goals:
+            inferred_goals.append("家庭")
+
+    if not inferred_goals:
+        # 兜底：默认事业（多数职场关系）
+        if "事业" in goals:
+            inferred_goals = ["事业"]
+        else:
+            inferred_goals = [goals[0]] if goals else []
+
+    # direction 推断：家人=互惠，客户/合作=我求于他，其余=互惠
+    if relation in ("family", "家人"):
+        direction = "互惠"
+    elif any(k in tags for k in ("客户", "合作")) or relation == "合作":
+        direction = "我求于他"
+    else:
+        direction = "互惠"
+    if direction not in directions:
+        direction = directions[0]
+
+    how = f"基于 {relation or '关系'} 维度的{inferred_goals[0]}资源互换"
+    return {"goals": inferred_goals, "how": how, "direction": direction}

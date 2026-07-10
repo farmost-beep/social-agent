@@ -1,6 +1,6 @@
 # 版本日志
 
-## 4.0.0 (规划生效 2026-07-10) — 初心回归：从温度计到参谋
+## 4.0.0 (规划生效 2026-07-10，阶段2 落地 2026-07-10) — 初心回归：从温度计到参谋
 
 规约见 `docs/SPEC_v4.md`（§16-22），2026-07-10 确认生效，按五阶段实施。
 
@@ -8,6 +8,28 @@
 - **目标锚定**：core 层联系人新增 `leverage` 字段（goals/how/direction/confirmed），关联用户六维目标（事业/投资/家庭/健康/AI能力/知识）；新命令 `social anchor`。逐人确认，不批量设定
 - **建议引擎**：新命令 `social advise`，输出"联系谁+为什么+聊什么"三元组，每周 3-5 条封顶；每周一晨间周推经营简报
 - **兑现追踪**：timeline 新增 `type=outcome` 成果记录（含 goal 关联）；新命令 `social outcomes`。只记录不算 ROI
+
+### 阶段2 落地（2026-07-10，目标锚定）
+
+**新功能**：
+- **`config/goals.yaml`**：六维目标框架配置（事业/投资/家庭/健康/AI能力/知识），支持 `goals.local.yaml` 覆盖；`engine.load_goals()` 读取，文件缺失时回退默认六维
+- **`leverage` 字段**：直接存入 `contacts.json` 联系人对象（与 tags/notes 同级）
+  - `engine.set_leverage()` / `get_leverage()` / `list_unanchored()` / `list_anchored()` / `anchor_stats()`
+  - `confirmed` 为空 = 仅 AI 建议未生效；`list_unanchored` 把这类视为待锚定（严格区分建议与确认）
+- **`social anchor` 三态命令**：
+  - `social anchor` —— 交互式批量锚定（默认 batch=5，按 strength 降序+未锚定优先；`[y]确认 [n]跳过 [e]编辑 [q]退出`）
+  - `social anchor <contact>` —— 单人锚定（显示 AI 建议→确认/编辑/跳过）
+  - `social anchor --stats` —— 进度统计（已锚定/待锚定/按强度/按目标维度/按 direction 分布）
+  - `--batch N` / `--min-strength S` / `--all` / `--confirm`（跳过交互直接写入）/ `--dry-run` / `--force`（强制锚定 reserve 或重新锚定已锚定）
+- **`ai.suggest_leverage()`**：复用 `_call_llm`，输入联系人 timeline+tags+role+notes，输出 `{goals, how, direction}` JSON；失败降级为基于 tags/relation 的规则推断（保证离线可用）
+
+**实施偏差（相对 SPEC v4 §18.3 草案措辞，均已回写规约 §18.4）**：
+- `leverage` 直接存 `contacts.json`（非独立文件）——单文件易查询
+- 批量默认 5 人（非 10）——避免单次 CLI 疲劳；`--all` 可一次过完
+- 储备池联系人需 `--force` 才能锚定——SPEC §18.3 仅 core 层为默认，留逃生口但不鼓励
+- `--confirm` 标志提供批量自动化通道，但默认走人工确认（原则二）
+
+**测试**：新增 `tests/test_v40_anchor.py` 30 用例（goals 加载/leverage 读写/排序/统计/JSON 解析/规则降级/整合），总计 167 全部通过。
 
 ### 前置地基（v3.1，可独立发版）
 - 文档一致性修复（SPEC_v3 §11 状态表过时：health 简化版、enrich --web 实际已实现）

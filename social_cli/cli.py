@@ -632,6 +632,248 @@ def cmd_health(args) -> int:
     return 0
 
 
+# ── anchor: 目标锚定 (SPEC v4 §18) ──
+
+def _print_anchor_card(contact, suggestion):
+    """打印联系人卡片 + AI 锚定建议。"""
+    name = contact.get("name", contact.get("id", "?"))
+    strength = contact.get("strength", 1)
+    relation = contact.get("relation", contact.get("role", ""))
+    sub = contact.get("sub_relation", "")
+    tags = contact.get("tags", [])
+    print(f"\n{'─'*60}")
+    print(f"  {name}  (强度{strength} · {relation}" + (f"/{sub}" if sub else "") + ")")
+    if tags:
+        print(f"  标签: {', '.join(tags[:8])}" + (" ..." if len(tags) > 8 else ""))
+    notes = contact.get("notes", "")
+    if isinstance(notes, list):
+        notes = " ".join(str(n) for n in notes)
+    if notes:
+        print(f"  备注: {str(notes)[:100]}")
+    print(f"\n  💡 AI 锚定建议:")
+    print(f"     goals:     {suggestion.get('goals', [])}")
+    print(f"     how:       {suggestion.get('how', '')}")
+    print(f"     direction: {suggestion.get('direction', '')}")
+
+
+def _prompt_confirm():
+    """交互式确认。返回 'y'/'n'/'e'/'q'。"""
+    try:
+        ans = input("\n  [y]确认 [n]跳过 [e]编辑 [q]退出 (默认 n): ").strip().lower()
+    except (EOFError, KeyboardInterrupt):
+        return "q"
+    return ans or "n"
+
+
+def _prompt_edit(suggestion, goals, directions):
+    """编辑建议。返回新 suggestion dict 或 None（取消）。"""
+    print(f"\n  当前 goals: {suggestion.get('goals', [])}")
+    print(f"  可选: {', '.join(goals)}")
+    try:
+        gs = input("  输入新 goals（逗号分隔，回车保留）: ").strip()
+    except (EOFError, KeyboardInterrupt):
+        return None
+    new_goals = None
+    if gs:
+        new_goals = [g.strip() for g in gs.split(",") if g.strip() in goals]
+        if not new_goals:
+            print("  ⚠ 无有效维度，保留原建议")
+            new_goals = None
+
+    try:
+        how = input(f"  输入新 how（回车保留「{suggestion.get('how','')}」）: ").strip()
+    except (EOFError, KeyboardInterrupt):
+        return None
+    if not how:
+        how = suggestion.get("how", "")
+
+    print(f"  可选 direction: {', '.join(directions)}")
+    try:
+        d = input(f"  输入新 direction（回车保留「{suggestion.get('direction','')}」）: ").strip()
+    except (EOFError, KeyboardInterrupt):
+        return None
+    if d and d not in directions:
+        print(f"  ⚠ 非法 direction，保留「{suggestion.get('direction','')}」")
+        d = suggestion.get("direction", "")
+    elif not d:
+        d = suggestion.get("direction", "")
+
+    return {
+        "goals": new_goals or suggestion.get("goals", []),
+        "how": how,
+        "direction": d,
+    }
+
+
+def cmd_anchor(args) -> int:
+    """目标锚定（SPEC v4 §18）。
+
+    三态：
+    - social anchor             交互式批量锚定（默认 batch=5）
+    - social anchor <contact>   单人锚定
+    - social anchor --stats     锚定进度统计
+    """
+    if _ensure_project_path() is None:
+        print("✗ 找不到 social-agent 项目根")
+        return 1
+
+    from engine import (
+        load_goals, list_unanchored, list_anchored, anchor_stats,
+        get_contact, resolve_contact, set_leverage, get_leverage,
+        contact_tier, list_timeline,
+    )
+    from ai import suggest_leverage
+
+    goals_cfg = load_goals()
+    goals = goals_cfg["goals"]
+    directions = goals_cfg["directions"]
+
+    # ── --stats ──
+    if args.stats:
+        s = anchor_stats()
+        print(f"\n📊 目标锚定进度（SPEC v4 §18）")
+        print(f"{'─'*40}")
+        print(f"  核心圈总数:   {s['core_total']}")
+        print(f"  已锚定:       {s['anchored']} ({s['anchored_pct']}%)")
+        print(f"  待锚定:       {s['pending']}")
+        if s["by_strength_anchored"]:
+            print(f"\n  已锚定按强度: {s['by_strength_anchored']}")
+        if s["by_strength_pending"]:
+            print(f"  待锚定按强度: {s['by_strength_pending']}")
+        if s["by_goal"]:
+            print(f"\n  已锚定按目标维度:")
+            for g, n in sorted(s["by_goal"].items(), key=lambda x: -x[1]):
+                print(f"    {g}: {n}")
+        if s["by_direction"]:
+            print(f"\n  已锚定按 direction:")
+            for d, n in s["by_direction"].items():
+                print(f"    {d}: {n}")
+        if s["pending"] > 0:
+            print(f"\n  下一步: social anchor  (默认先锚定强度最高的 {min(args.batch, s['pending'])} 人)")
+        return 0
+
+    # ── 单人锚定 ──
+    if args.contact:
+        cid, c = resolve_contact(args.contact)
+        if not c:
+            print(f"✗ 未找到联系人: {args.contact}")
+            return 1
+        if contact_tier(c) != "core":
+            print(f"⚠ {c.get('name', cid)} 在储备池（强度{c.get('strength',1)}），SPEC §18.3 仅锚定 core 层")
+            if not args.force:
+                print("  使用 --force 强制锚定储备池联系人")
+                return 1
+
+        # 已锚定则先展示
+        existing = get_leverage(cid)
+        if existing and existing.get("confirmed"):
+            print(f"\n📌 {c.get('name', cid)} 已锚定（{existing['confirmed']}）:")
+            print(f"   goals:     {existing.get('goals', [])}")
+            print(f"   how:       {existing.get('how', '')}")
+            print(f"   direction: {existing.get('direction', '')}")
+            if not args.force:
+                print("\n  使用 --force 重新锚定")
+                return 0
+
+        # 生成建议
+        tls = list_timeline(contact=cid, days=180) if cid else []
+        tl_summary = "；".join(t.get("summary", "") for t in tls[:3]) if tls else ""
+        suggestion = suggest_leverage(c, goals, timeline_summary=tl_summary, directions=directions)
+
+        _print_anchor_card(c, suggestion)
+
+        if args.dry_run:
+            return 0
+
+        if args.confirm:
+            # --confirm 直接写入（不交互）
+            today = __import__("datetime").date.today().isoformat()
+            ok, msg = set_leverage(cid, suggestion["goals"], suggestion["how"], suggestion["direction"], confirmed=today)
+            print(f"\n  {'✓' if ok else '✗'} {msg}")
+            return 0 if ok else 1
+
+        ans = _prompt_confirm()
+        if ans == "q":
+            print("\n  已退出")
+            return 0
+        if ans == "n":
+            print("  跳过")
+            return 0
+
+        final = suggestion
+        if ans == "e":
+            edited = _prompt_edit(suggestion, goals, directions)
+            if not edited:
+                print("  取消")
+                return 0
+            final = edited
+
+        # 写入（confirmed=今日，用户已确认）
+        today = __import__("datetime").date.today().isoformat()
+        ok, msg = set_leverage(cid, final["goals"], final["how"], final["direction"], confirmed=today)
+        print(f"\n  {'✓' if ok else '✗'} {msg}")
+        return 0 if ok else 1
+
+    # ── 批量交互式 ──
+    min_s = args.min_strength
+    batch = args.batch
+    candidates = list_unanchored(min_strength=min_s, tier="core", limit=batch if not args.all else None)
+    if not candidates:
+        print("\n✓ 核心圈已全部锚定（或当前过滤条件下无候选）")
+        print("  social anchor --stats 查看进度")
+        return 0
+
+    print(f"\n🎯 目标锚定（SPEC v4 §18）—— 本次 {len(candidates)} 人候选")
+    print(f"  目标维度: {', '.join(goals)}")
+    print(f"  操作: [y]确认 [n]跳过 [e]编辑 [q]退出\n")
+
+    confirmed_count = 0
+    skipped_count = 0
+    for c in candidates:
+        cid = c["id"]
+        tls = list_timeline(contact=cid, days=180)
+        tl_summary = "；".join(t.get("summary", "") for t in tls[:3]) if tls else ""
+        suggestion = suggest_leverage(c, goals, timeline_summary=tl_summary, directions=directions)
+
+        _print_anchor_card(c, suggestion)
+
+        if args.dry_run:
+            skipped_count += 1
+            continue
+
+        ans = _prompt_confirm()
+        if ans == "q":
+            print("\n  已退出")
+            break
+        if ans == "n":
+            skipped_count += 1
+            print("  跳过")
+            continue
+
+        final = suggestion
+        if ans == "e":
+            edited = _prompt_edit(suggestion, goals, directions)
+            if not edited:
+                print("  取消")
+                skipped_count += 1
+                continue
+            final = edited
+
+        today = __import__("datetime").date.today().isoformat()
+        ok, msg = set_leverage(cid, final["goals"], final["how"], final["direction"], confirmed=today)
+        print(f"  {'✓' if ok else '✗'} {msg}")
+        if ok:
+            confirmed_count += 1
+
+    print(f"\n{'─'*40}")
+    print(f"  本次: 确认 {confirmed_count} · 跳过 {skipped_count}")
+    stats = anchor_stats()
+    print(f"  总进度: {stats['anchored']}/{stats['core_total']} ({stats['anchored_pct']}%)")
+    if stats["pending"] > 0:
+        print(f"  下一步: social anchor  (继续锚定下一批)")
+    return 0
+
+
 def cmd_draft(args) -> int:
     """AI拟稿。v3.0 使用新 LLM 抽象层。"""
     if not args.message:
@@ -1033,6 +1275,17 @@ def build_parser() -> argparse.ArgumentParser:
     p_remind.add_argument("--dry-run", action="store_true", help="只打印不推送")
     p_remind.add_argument("--cron", action="store_true", help="打印 crontab 接入配置")
 
+    # anchor (v4.0 §18)
+    p_anchor = subparsers.add_parser("anchor", help="目标锚定（v4.0 §18）")
+    p_anchor.add_argument("contact", nargs="?", help="单人锚定（联系人名/ID）")
+    p_anchor.add_argument("--stats", action="store_true", help="锚定进度统计")
+    p_anchor.add_argument("--batch", type=int, default=5, metavar="N", help="批量锚定每次人数（默认 5）")
+    p_anchor.add_argument("--min-strength", type=int, metavar="S", help="仅锚定 strength≥S 的联系人")
+    p_anchor.add_argument("--all", action="store_true", help="不限批次大小，列出全部候选")
+    p_anchor.add_argument("--confirm", action="store_true", help="跳过交互直接写入 AI 建议（批量自动化）")
+    p_anchor.add_argument("--dry-run", action="store_true", help="只打印建议不写入")
+    p_anchor.add_argument("--force", action="store_true", help="强制重新锚定已锚定/储备池联系人")
+
     # draft
     p_draft = subparsers.add_parser("draft", help="AI拟稿")
     p_draft.add_argument("-m", "--message", required=True, help="上下文摘要")
@@ -1088,6 +1341,7 @@ _COMMANDS = {
     "config": cmd_config,
     "chat": cmd_chat,
     "remind": cmd_remind,
+    "anchor": cmd_anchor,
     "send": cmd_send,
     "send-check": cmd_send_check,
     "wxid-bind": cmd_wxid_bind,

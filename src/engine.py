@@ -767,3 +767,153 @@ def mark_enriched(contact_id):
             _save(CONTACTS_FILE, contacts)
             return True
     return False
+
+
+# ── 目标锚定 leverage (SPEC v4 §18) ──
+
+def load_goals():
+    """读取 config/goals.yaml 的目标框架。
+
+    返回 {"goals": [...], "directions": [...]}。
+    文件缺失时返回默认六维框架（与 SPEC §18.1 一致）。
+    """
+    paths = [
+        Path(__file__).resolve().parent.parent / "config" / "goals.local.yaml",
+        Path(__file__).resolve().parent.parent / "config" / "goals.yaml",
+    ]
+    for p in paths:
+        if p.exists():
+            with open(p, "r", encoding="utf-8") as f:
+                data = yaml.safe_load(f) or {}
+            return {
+                "goals": data.get("goals", []),
+                "directions": data.get("directions", ["我求于他", "他求于我", "互惠"]),
+            }
+    # 默认六维（SPEC §18.1）
+    return {
+        "goals": ["事业", "投资", "家庭", "健康", "AI能力", "知识"],
+        "directions": ["我求于他", "他求于我", "互惠"],
+    }
+
+
+def get_leverage(contact_id):
+    """读取联系人 leverage 字段。无则返回 None。"""
+    c = get_contact(contact_id)
+    if not c:
+        return None
+    return c.get("leverage")
+
+
+def set_leverage(contact_id, goals, how, direction, confirmed=None):
+    """写入 leverage 字段（SPEC v4 §18.2）。
+
+    Args:
+        contact_id: 联系人 ID
+        goals: 目标维度列表（如 ["事业", "AI能力"]）
+        how: 撬动方式一句话
+        direction: 我求于他 / 他求于我 / 互惠
+        confirmed: 确认日期（ISO 字符串）；None 表示仅 AI 建议、未生效
+
+    Returns:
+        (ok, msg)
+    """
+    valid_dirs = load_goals()["directions"]
+    if direction not in valid_dirs:
+        return False, f"direction 非法：{direction}，可选 {valid_dirs}"
+
+    leverage = {
+        "goals": list(goals),
+        "how": how,
+        "direction": direction,
+        "confirmed": confirmed,
+    }
+    contacts = _load(CONTACTS_FILE)
+    for c in contacts:
+        if c["id"] == contact_id:
+            c["leverage"] = leverage
+            _save(CONTACTS_FILE, contacts)
+            return True, f"已锚定 {c.get('name', contact_id)}: goals={goals}, direction={direction}"
+    return False, f"未找到联系人: {contact_id}"
+
+
+def list_unanchored(min_strength=None, tier="core", limit=None):
+    """列出未锚定（无 leverage 或 leverage.confirmed 为空）的联系人。
+
+    排序：strength 降序 → name 升序（先锚定高强度，SPEC §18.3）。
+
+    Args:
+        min_strength: 仅返回 strength≥此值的联系人（None=按 tier 过滤）
+        tier: "core"（默认）/ "reserve" / None（不限）
+        limit: 最多返回条数
+    """
+    contacts = _load(CONTACTS_FILE)
+    result = []
+    for c in contacts:
+        if c.get("relation") == "self":
+            continue
+        s = c.get("strength", 1)
+        if min_strength is not None and s < min_strength:
+            continue
+        if tier is not None and contact_tier(c) != tier:
+            continue
+        lev = c.get("leverage")
+        if not lev or not lev.get("confirmed"):
+            result.append(c)
+    result.sort(key=lambda c: (-c.get("strength", 1), c.get("name", c.get("id", ""))))
+    if limit:
+        result = result[:limit]
+    return result
+
+
+def list_anchored(tier=None):
+    """列出已锚定（leverage.confirmed 非空）的联系人。"""
+    contacts = _load(CONTACTS_FILE)
+    result = []
+    for c in contacts:
+        if tier is not None and contact_tier(c) != tier:
+            continue
+        lev = c.get("leverage")
+        if lev and lev.get("confirmed"):
+            result.append(c)
+    return result
+
+
+def anchor_stats():
+    """返回锚定进度统计（SPEC v4 §18.3）。"""
+    contacts = _load(CONTACTS_FILE)
+    core = [c for c in contacts if contact_tier(c) == "core" and c.get("relation") != "self"]
+    anchored = [c for c in core if c.get("leverage", {}).get("confirmed")]
+    pending = [c for c in core if not c.get("leverage", {}).get("confirmed")]
+
+    # 按强度分布
+    by_strength_anchored = {}
+    by_strength_pending = {}
+    for c in anchored:
+        s = c.get("strength", 1)
+        by_strength_anchored[s] = by_strength_anchored.get(s, 0) + 1
+    for c in pending:
+        s = c.get("strength", 1)
+        by_strength_pending[s] = by_strength_pending.get(s, 0) + 1
+
+    # 按目标维度分布（已锚定）
+    by_goal = {}
+    for c in anchored:
+        for g in c.get("leverage", {}).get("goals", []):
+            by_goal[g] = by_goal.get(g, 0) + 1
+
+    # 按 direction 分布
+    by_direction = {}
+    for c in anchored:
+        d = c.get("leverage", {}).get("direction", "?")
+        by_direction[d] = by_direction.get(d, 0) + 1
+
+    return {
+        "core_total": len(core),
+        "anchored": len(anchored),
+        "pending": len(pending),
+        "anchored_pct": round(len(anchored) / max(len(core), 1) * 100, 1),
+        "by_strength_anchored": dict(sorted(by_strength_anchored.items(), reverse=True)),
+        "by_strength_pending": dict(sorted(by_strength_pending.items(), reverse=True)),
+        "by_goal": by_goal,
+        "by_direction": by_direction,
+    }
