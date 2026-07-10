@@ -41,14 +41,40 @@ def _save(path, data):
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
+# ── 双层架构 tier (SPEC v4 §17) ──
+
+TIER_CORE_MIN_STRENGTH = 3
+
+def contact_tier(contact):
+    """派生 tier：core（strength≥3）/ reserve（≤2）。
+
+    按 strength 实时计算，不持久化，避免字段与强度不同步。
+    """
+    return "core" if contact.get("strength", 1) >= TIER_CORE_MIN_STRENGTH else "reserve"
+
+
+def promotion_hint(contact):
+    """储备池晋升提示（SPEC v4 §17）：reserve 联系人发生真实互动时返回提示文案。
+
+    只提示，不自动改强度、不自动跑补全（原则二 + 原则七）。
+    """
+    if contact_tier(contact) != "reserve" or contact.get("relation") == "self":
+        return None
+    name = contact.get("name", contact.get("id", "?"))
+    return (f"💡 {name} 当前在储备池（强度{contact.get('strength', 1)}），出现真实互动。\n"
+            f"   建议评估晋升: python3 src/social.py edit-contact {contact['id']} --strength 3\n"
+            f"   补全画像:     python3 src/social.py enrich --contact {contact['id']} --web")
+
 # ── Contacts ──
 
-def list_contacts(role=None, tag=None):
+def list_contacts(role=None, tag=None, tier=None):
     contacts = _load(CONTACTS_FILE)
     if role:
         contacts = [c for c in contacts if c.get("role") == role or c.get("sub_relation") == role]
     if tag:
         contacts = [c for c in contacts if tag in c.get("tags", [])]
+    if tier:
+        contacts = [c for c in contacts if contact_tier(c) == tier]
     return contacts
 
 def add_contact(contact_id, name, role, tags=None, platforms=None, notes="", sub_relation=""):
@@ -165,8 +191,8 @@ def update_contact(contact_id, updates):
 
 # ── 角色互动层数 (SPEC 0.3) ──
 
-def _apply_role_layers(contact):
-    """计算联系人的角色互动层数，添加角色x1/x2/x3标签。
+def role_layers(contact):
+    """纯函数：计算联系人的角色互动层数列表（不修改联系人）。
 
     检测维度：职业层/校友层/组织层/社交层/合作层/家庭层
     """
@@ -207,8 +233,13 @@ def _apply_role_layers(contact):
     if relation == "family" or "家人" in tags or relation == "家人":
         layers.append("家层")
 
-    # 去重并计算层数
-    unique_layers = list(dict.fromkeys(layers))
+    # 去重
+    return list(dict.fromkeys(layers))
+
+
+def _apply_role_layers(contact):
+    """计算联系人的角色互动层数，添加角色x1/x2/x3标签（修改联系人）。"""
+    unique_layers = role_layers(contact)
     layer_count = len(unique_layers)
 
     # 移除旧的角色x标签
@@ -456,12 +487,30 @@ def _auto_add_todo(contact, task, source_id):
 
 # ── Todos ──
 
+STALE_TODO_DAYS = 30
+
 def list_todos(priority=None, status="pending"):
     todos = _load(TODOS_FILE)
     if status:
         todos = [t for t in todos if t.get("status") == status]
     if priority:
         todos = [t for t in todos if t.get("priority") == priority]
+    # 字段归一化（不落盘）：部分写入方用 content 而非 task
+    for t in todos:
+        if "task" not in t and t.get("content"):
+            t["task"] = t["content"]
+    # 待办老化标注（SPEC v4 §17）：pending 超30天未动 → stale=True（仅标注，不取消，核心规则3）
+    today = date.today()
+    for t in todos:
+        if t.get("status") == "pending":
+            created = str(t.get("created", ""))[:10]
+            try:
+                age = (today - date.fromisoformat(created)).days
+            except ValueError:
+                continue
+            if age >= STALE_TODO_DAYS:
+                t["stale"] = True
+                t["stale_days"] = age
     # Sort: P0 first, then by due date
     priority_order = {"P0": 0, "P1": 1, "P2": 2}
     todos.sort(key=lambda t: (priority_order.get(t.get("priority", "P2"), 9), t.get("due", "")))
@@ -493,7 +542,8 @@ def complete_todo(todo_id):
 
 # ── Dashboard ──
 
-def get_dashboard():
+def get_dashboard(scope="core"):
+    """仪表盘。scope="core" 冷却检查只扫核心圈（strength≥3）；scope="all" 扫全量。"""
     contacts = _load(CONTACTS_FILE)
     todos = list_todos()
     timeline = list_timeline(days=7)
@@ -508,11 +558,12 @@ def get_dashboard():
     today = date.today().isoformat()
     overdue = [t for t in todos if t.get("due", "") < today and t.get("status") == "pending"]
 
-    # Health check: relationships not contacted
+    # Health check: relationships not contacted（默认仅 core 层，SPEC v4 §17）
     timeline_all = _load(TIMELINE_FILE)
     cold = []   # 21天+ 🔴
     warm = []   # 14-20天 🟡
-    for c in contacts:
+    scan = contacts if scope == "all" else [c for c in contacts if contact_tier(c) == "core"]
+    for c in scan:
         # 跳过自己
         if c.get("relation") == "self" or c.get("id") == "陈颖芳":
             continue

@@ -363,25 +363,22 @@ p.add_argument("--foo", help="...")
 
 | 功能 | SPEC v2.5 优先级 | v3.0 状态 | 备注 |
 |:----|:---------------|:---------|:-----|
-| 批量画像补全 `enrich` | **P0** | ⚠️ **部分** | CLI 转发旧代码；DuckDuckGo `--web` 未实现 |
-| 关系图谱 `connect/connections` | P1 | ❌ **未实现** | 数据模型 `_connections` 未加 |
-| 群聊感知 `list-groups/group-members` | P1 | ❌ **未实现** | 数据模型 `_groups` 未加 |
-| 互动信号采集 `import-chat/import-calls` | P2 | ❌ **未实现** | — |
-| 关系健康分 `health` | P2 | ❌ **未实现** | CLI 仅占位 |
+| 批量画像补全 `enrich` | **P0** | ✅ **已实现** | 含 `--web` DuckDuckGo 集成（同名检测+缓存）；v2 路径含 enrichment_log 日志 |
+| 关系图谱 `connect/connections` | P1 | ❌ **未实现** | 数据模型 `_connections` 未加，冻结至 v4.x+（见 SPEC_v4 §21.1） |
+| 群聊感知 `list-groups/group-members` | P1 | ❌ **未实现** | 数据模型 `_groups` 未加，冻结至 v4.x+ |
+| 互动信号采集 `import-chat/import-calls` | P2 | ❌ **未实现** | 冻结（合规风险，见 SPEC_v4 §21.1） |
+| 关系健康分 `health` | P2 | ✅ **简化版已实现** | recency×0.4+depth×0.6，含 --fix/--ranking；三因子版见 v3.1 |
 
-### 11.2 P0: enrich（部分实现）
+> ⚠️ 2026-07-10 修订：本表曾错误标注 `health` 与 `enrich --web` 为未实现，与代码实际不符（社审实测修正）。
+
+### 11.2 P0: enrich（已实现，2026-07-10 修订）
 
 **已实现**：
-- ✅ CLI 子命令（`social enrich`）
-- ✅ 转发到 `src/social.py cmd_enrich`
-- ✅ 基础保护规则（不覆盖 relation、不删除 notes）
-
-**未实现**：
-- ❌ `--web` DuckDuckGo 集成
-- ❌ `_enrich_version` 字段追踪
-- ❌ `enrichment_log.json` 独立日志
-
-**当前影响**：可用但功能不完整。
+- ✅ CLI 子命令（`social enrich`）+ v2 路径（`src/social.py cmd_enrich` → `src/enrich.py`）
+- ✅ 保护规则（不覆盖 relation、不删除 notes、置信度分级写入）
+- ✅ `--web` DuckDuckGo 集成（同名检测防误用 + 批内缓存 + 300ms 限速）
+- ✅ `_enrich_version` 字段追踪
+- ✅ `enrichment_log.json` 独立日志（v2 路径；v3 CLI 路径于 v3.1 接入）
 
 ### 11.3 P1: 关系图谱（未实现）
 
@@ -438,22 +435,23 @@ social import-calls <file.csv>
 
 **未实现原因**：微信聊天记录导出有合规风险；用户主动说"记一下"成本已经很低。
 
-### 11.6 P2: 关系健康分（未实现）
+### 11.6 P2: 关系健康分（简化版已实现，2026-07-10 修订）
 
-**规划功能**（SPEC v2.5 §8.6）：
+**已实现**（`social_cli/cli.py cmd_health`）：
 ```bash
 social health              # 所有联系人
-social health 张三          # 单个人
-social health --fix        # 需关注的
+social health 张三          # 单个人（含分项明细）
+social health --fix        # 需关注的（<50分）
 social health --ranking    # 排行榜
 ```
 
-**评分模型**（规划中）：
+**当前评分模型**（v3.0 简化版两因子）：
 ```
-health_score = recency × 0.40 + depth × 0.30 + layers × 0.20 + events × 0.10
+health_score = recency × 0.40 + depth × 0.60
 ```
 
-**未实现原因**：依赖 `_connections` / `_groups` 等数据基础，需先实现 P1。
+**演进**：v3.1 升级为三因子 `recency×0.4 + depth×0.3 + layers×0.3`（layers 数据已有）；
+v2.5 原规划的 events 因子因数据不足砍掉（见 SPEC_v4 §17）。
 
 ### 11.7 后续实施优先级建议
 
@@ -530,6 +528,7 @@ v3.0.0  Social-CLI v3.0.0 — 解耦 Claude Code 独立化
 |:-----|:-----|
 | [SPEC.md (v2.3)](SPEC.md) | 前身规约（基础理论 0-3、自动化规则 7、v2.5 规划 8）|
 | [SPEC_v3.md](SPEC_v3.md) | **本规约 v3.0**（§9-12 新增架构）|
+| [SPEC_v4.md](SPEC_v4.md) | 后继规约 v4.0（§16-22 初心回归主线，2026-07-10 生效）|
 | [README.md](../README.md) | 用户快速开始 + v3.0 章节 |
 | [CHANGELOG.md](CHANGELOG.md) | 版本日志 |
 | [MIGRATION.md](MIGRATION.md) | v2.5 → v3.0 迁移指南 |

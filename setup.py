@@ -9,12 +9,12 @@ from setuptools import setup, find_packages
 
 setup(
     name="social-agent",
-    version="3.0.4",
+    version="3.1.0",
     description="社交关系AI管家 - 独立 CLI 工具，自动追踪社交关系，帮你拟消息、记待办、维护人脉",
     long_description=open("README.md", encoding="utf-8").read(),
     long_description_content_type="text/markdown",
     author="陈颖芳",
-    author_email="chenyingfang@example.com",  # TODO: 替换为真实邮箱
+    author_email="farmost@gmail.com",
     url="https://github.com/farmost-beep/social-agent",
     project_urls={
         "Source": "https://github.com/farmost-beep/social-agent",

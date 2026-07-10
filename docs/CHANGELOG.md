@@ -1,5 +1,60 @@
 # 版本日志
 
+## 4.0.0 (规划生效 2026-07-10) — 初心回归：从温度计到参谋
+
+规约见 `docs/SPEC_v4.md`（§16-22），2026-07-10 确认生效，按五阶段实施。
+
+### 主线（三支柱）
+- **目标锚定**：core 层联系人新增 `leverage` 字段（goals/how/direction/confirmed），关联用户六维目标（事业/投资/家庭/健康/AI能力/知识）；新命令 `social anchor`。逐人确认，不批量设定
+- **建议引擎**：新命令 `social advise`，输出"联系谁+为什么+聊什么"三元组，每周 3-5 条封顶；每周一晨间周推经营简报
+- **兑现追踪**：timeline 新增 `type=outcome` 成果记录（含 goal 关联）；新命令 `social outcomes`。只记录不算 ROI
+
+### 前置地基（v3.1，可独立发版）
+- 文档一致性修复（SPEC_v3 §11 状态表过时：health 简化版、enrich --web 实际已实现）
+- 落地 `enrichment_log.json` 写入
+- 双层架构：`tier` 字段（core=strength≥3 约317人 / reserve），主动经营功能默认只扫 core 层
+- 储备池晋升机制：真实互动触发晋升评估 + 单人 enrich --web
+- health 三因子：recency×0.4 + depth×0.3 + layers×0.3
+- 提醒调度解耦：CronCreate → 本地 launchd/cron + `social remind`
+- 待办老化：pending >30天 标记 stale（只提示不自动取消）
+
+### 范围冻结
+- `_connections` 图谱、`_groups` 群感知、import-chat/calls 冻结至 v4.x+
+- 批量 enrich 灰色联系人路线废弃（实测证伪：一个月仅 3/4,683），改为晋升触发式
+
+---
+
+## 3.1.0 (2026-07-10) — 分层经营地基（SPEC v4 §17 实施）
+
+### 新功能
+- **双层架构 tier**：`engine.contact_tier()` 派生属性（core=strength≥3 / reserve），`list_contacts(tier=...)` 过滤
+  - `dashboard` / `check` / `health` 冷却与健康扫描**默认只扫核心圈**（317人），`--all` 扫全量（4,683人）
+- **储备池晋升提示**：`log` / `note` 命中 reserve 联系人时提示晋升评估 + 单人补全命令（只提示不自动改，遵守原则二）
+- **单人补全**：`social.py enrich --contact <人> [--web]`（晋升触发式，替代批量灰色补全路线）
+- **health 三因子**：`recency×0.4 + depth×0.3 + layers×0.3`（layers 按角色互动层数实时计算），单人视图显示分项
+- **`social remind`**：日程提前提醒本地化（解耦 Claude Code CronCreate）
+  - 扫描今日待办中的时间标注（due ISO datetime / 14:30 / 下午3点半），窗口内推送微信
+  - `--cron` 打印 crontab 接入配置；`data/remind_state.json` 去重（同待办同日只提醒一次）
+- **待办老化**：pending >30天标记 🕸️ stale 置顶提示（仅标注，不自动取消，核心规则3）
+- v3 CLI enrich 路径接入 `enrichment_log.json` 写入（此前仅 v2 路径有日志）
+
+### 修复
+- 修复 `todos` 对 `content` 字段待办（13条）崩溃：读取时归一化 `content→task`（不落盘）
+- 消除 `social.py` main() 中 dashboard/check 的重复内联实现（曾致 cmd_dashboard 修改不生效）
+- `_apply_role_layers` 拆出纯函数 `role_layers()`（health layers 因子复用，不再副作用改 tags）
+- 修复 `test_version` 硬编码版本号（改为断言 `__version__`）
+- 文档修正：SPEC_v3 §11 状态表与代码不符（health/enrich --web 实际已实现）
+
+### 测试
+- 新增 `tests/test_v31.py` 22 个用例，总计 137 个全部通过
+
+### 实施偏差（相对 SPEC v4 §17 草案措辞，均已回写规约）
+- tier 为**派生属性**（按 strength 实时计算），不持久化字段——避免 4,683 条记录与强度不同步
+- 晋升机制为**提示+命令建议**，不自动执行 enrich——避免 log 命令被网络调用阻塞
+- 提醒调度用 **crontab 打印接入配置**，不自动安装 launchd——系统级修改留给用户确认
+
+---
+
 ## 3.0.0 (2026-07-08) — Social-CLI 独立化
 
 ### 核心变更：解耦 Claude Code 依赖

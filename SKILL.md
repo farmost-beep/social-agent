@@ -102,7 +102,9 @@ data/
 
 ## 相关文档
 
-- `docs/SPEC.md` — 产品设计规约
+- `docs/SPEC.md` — 产品设计规约（v2.3 基础理论）
+- `docs/SPEC_v3.md` — v3.0 架构规约（LLM 抽象层 + CLI）
+- `docs/SPEC_v4.md` — v4.0 规约（初心回归主线，2026-07-10 生效）
 - `README.md` — 产品介绍与快速开始
 - `docs/CONFIG.md` — 配置指南
 - `docs/MIGRATION.md` — v2.5 → v3.0 迁移指南

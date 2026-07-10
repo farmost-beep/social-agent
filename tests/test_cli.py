@@ -122,7 +122,8 @@ class TestVersion(unittest.TestCase):
         output = f.getvalue()
 
         self.assertEqual(result, 0)
-        self.assertIn("3.0.0", output)
+        from social_cli import __version__
+        self.assertIn(__version__, output)
         self.assertIn("Python", output)
 
 

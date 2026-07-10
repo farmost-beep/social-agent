@@ -25,8 +25,18 @@ from ai import draft_message, generate_reminder
 from push import push_to_wechat, send_message
 from enrich import enrich_contact, count_from_log
 
+def _has_flag(args, flag):
+    """兼容 list（v2 手工解析）与 argparse Namespace（v3 CLI 转发）两种 args。"""
+    if args is None:
+        return False
+    if isinstance(args, (list, tuple)):
+        return flag in args
+    return bool(getattr(args, flag.lstrip("-").replace("-", "_"), False))
+
+
 def cmd_dashboard(args):
-    d = get_dashboard()
+    scope = "all" if _has_flag(args, "--all") else "core"
+    d = get_dashboard(scope=scope)
     print(f"\n{'='*40}")
     print(f"  社交关系AI管家 · 仪表盘")
     print(f"{'='*40}")
@@ -34,10 +44,14 @@ def cmd_dashboard(args):
     print(f"  各角色: {d['by_role']}")
     print(f"  待办: {d['pending_todos']}项 (超期{d['overdue_todos'].__len__()}项)")
     print(f"  近7天活动: {d['recent_activities']}条")
-    print(f"  冷却关系: 🔴{len(d['cold_relationships'])}个  🟡{len(d.get('warm_relationships',[]))}个")
-    for c in d['cold_relationships']:
-        print(f"    🔴 {c['contact']} — {c['days']}天未联系")
-    for c in d.get('warm_relationships', []):
+    scope_note = "（全量）" if scope == "all" else "（核心圈，--all 看全量）"
+    print(f"  冷却关系{scope_note}: 🔴{len(d['cold_relationships'])}个  🟡{len(d.get('warm_relationships',[]))}个")
+    for c in d['cold_relationships'][:15]:
+        never = " (无记录)" if c.get("never_recorded") else ""
+        print(f"    🔴 {c['contact']} — {c['days']}天未联系{never}")
+    if len(d['cold_relationships']) > 15:
+        print(f"    ...还有 {len(d['cold_relationships'])-15} 个🔴")
+    for c in d.get('warm_relationships', [])[:15]:
         print(f"    🟡 {c['contact']} — {c['days']}天未联系")
     print(f"{'='*40}\n")
     # Show top todos
@@ -51,8 +65,9 @@ def cmd_dashboard(args):
     return 0
 
 def cmd_check(args):
-    """Check all relationships and generate reminders."""
-    contacts = list_contacts()
+    """Check relationships and generate reminders（默认核心圈，--all 全量）."""
+    scope_all = _has_flag(args, "--all")
+    contacts = list_contacts(tier=None if scope_all else "core")
     reminders = []
     for c in contacts:
         records = list_timeline(contact=c["id"], days=60)
@@ -81,14 +96,39 @@ def cmd_check(args):
     return 0
 
 def cmd_enrich(args):
-    """AI 批量画像补全管道 (P0)。"""
-    opts = _parse_opts(args, ["--batch", "--dry-run", "--force", "--stats"])
+    """AI 批量画像补全管道 (P0)。--contact 单人模式（晋升触发式补全，SPEC v4 §17）。"""
+    opts = _parse_opts(args, ["--batch", "--dry-run", "--force", "--stats", "--contact"])
     # 解析 flags
     dry_run = "--dry-run" in args
     force = "--force" in args
     stats = "--stats" in args
     use_web = "--web" in args
     batch = int(opts.get("--batch", "10"))
+
+    if opts.get("--contact"):
+        contact, match_type = resolve_contact(opts["--contact"])
+        if not contact:
+            print(f"未找到联系人: {opts['--contact']}")
+            return 1
+        if match_type != "id":
+            print(f"  ↳ 匹配到: {contact['name']} ({match_type})")
+        mode = "🌐 带网络信源" if use_web else "🔧 本地信源"
+        print(f"{mode} 单人画像补全: {contact['name']}")
+        result = enrich_contact(contact, dry_run=dry_run, use_web=use_web)
+        status = result.get("status", "?")
+        conf = result.get("confidence", 0)
+        if status in ("enriched", "enriched_light"):
+            print(f"  ✅ 已补全 (conf={conf})")
+            for a in result.get("actions", []):
+                print(f"     {a}")
+        elif status == "skipped":
+            print(f"  ⏭️ 跳过 ({result.get('reason','')}, conf={conf})")
+        elif status == "no_update":
+            print(f"  ➖ 无需更新 (conf={conf})")
+        else:
+            print(f"  ❌ 失败: {result.get('error','未知错误')}")
+            return 1
+        return 0
 
     if stats:
         s = get_enrichment_stats()
@@ -283,6 +323,11 @@ def main():
         tags = opts.get("--tags", "").split() if opts.get("--tags") else []
         ok, msg = add_memory(contact_id, content, tags)
         print(msg)
+        if ok:
+            updated = get_contact(contact_id)
+            hint = promotion_hint(updated) if updated else None
+            if hint:
+                print(hint)
         return 0 if ok else 1
 
     elif cmd == "birthdays":
@@ -338,6 +383,9 @@ def main():
         print(f"已记录: {record['summary'][:40]}")
         if record.get("pending"):
             print(f"待办已创建: {record['pending']}")
+        hint = promotion_hint(resolved)
+        if hint:
+            print(hint)
         return 0
 
     elif cmd == "todos":
@@ -347,7 +395,17 @@ def main():
             print("没有待办事项 ✅")
             return 0
         today = date.today().isoformat()
+        stale_items = [t for t in todos if t.get("stale")]
+        if stale_items:
+            print(f"\n🕸️ 老化待办（{len(stale_items)}条，>30天未动，请确认是否仍需跟进）:")
+            for t in stale_items:
+                contact = get_contact(t["contact"])
+                name = contact["name"] if contact else t["contact"]
+                print(f"  🕸️ [{t['priority']}] {name} - {t['task']} (已挂{t.get('stale_days','?')}天)")
+            print()
         for t in todos:
+            if t.get("stale"):
+                continue
             overdue = " ⏰" if t.get("due", "") < today else ""
             tag = {"P0": "🔴", "P1": "🟡", "P2": "🟢"}.get(t.get("priority", "P1"), "⬜")
             contact = get_contact(t["contact"])
@@ -478,47 +536,10 @@ def main():
         return 0
 
     elif cmd == "dashboard":
-        d = get_dashboard()
-        print(f"\n社交关系AI管家 - 仪表盘")
-        print(f"联系人: {d['total_contacts']}人 | 角色: {d['by_role']}")
-        print(f"待办: {d['pending_todos']}项 (超期{len(d['overdue_todos'])}项)")
-        print(f"近7天活动: {d['recent_activities']}条")
-        print(f"冷却关系: 🔴{len(d['cold_relationships'])}个  🟡{len(d.get('warm_relationships',[]))}个")
-        for c in d['cold_relationships']:
-            print(f"  🔴 {c['contact']} - {c['days']}天未联系")
-        for c in d.get('warm_relationships', []):
-            print(f"  🟡 {c['contact']} - {c['days']}天未联系")
-        todos = list_todos()
-        if todos:
-            print(f"\n优先待办:")
-            for t in todos[:5]:
-                c = get_contact(t["contact"])
-                name = c["name"] if c else t["contact"]
-                print(f"  [{t['priority']}] {name} - {t['task']}")
-        return 0
+        return cmd_dashboard(args)
 
     elif cmd == "check":
-        reminders = []
-        contacts = list_contacts()
-        for c in contacts:
-            records = list_timeline(contact=c["id"], days=60)
-            if not records:
-                reminders.append((c["name"], 999, ""))
-                continue
-            last = records[0]
-            days_since = (date.today() - date.fromisoformat(last["date"])).days
-            if days_since >= 14:
-                reminders.append((c["name"], days_since, last.get("summary", "")))
-        if not reminders:
-            print("所有关系都在14天内联系过")
-            return 0
-        print(f"需要跟进 ({len(reminders)}个):")
-        for name, days, summary in reminders:
-            level = "P0" if days >= 21 else "P1"
-            print(f"  [{level}] {name} - {days}天未联系")
-            if summary:
-                print(f"    上次: {summary[:40]}")
-        return 0
+        return cmd_check(args)
 
     elif cmd == "enrich":
         return cmd_enrich(args)

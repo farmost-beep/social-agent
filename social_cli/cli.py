@@ -195,7 +195,11 @@ def cmd_todos(args) -> int:
 
         due_str = f" (到期 {due})" if due else ""
         new_str = f" 🆕" if created == today else ""
-        print(f"  {status_icon}{pri_icon} {i:2d}. [{contact}]{due_str} {task}{new_str}")
+        stale_str = f" 🕸️已挂{t.get('stale_days','?')}天" if t.get("stale") else ""
+        print(f"  {status_icon}{pri_icon} {i:2d}. [{contact}]{due_str} {task}{new_str}{stale_str}")
+    stale_count = sum(1 for t in todos if t.get("stale"))
+    if stale_count:
+        print(f"\n  🕸️ {stale_count} 条待办超30天未动，请确认是否仍需跟进（不会自动取消）")
     return 0
 
 
@@ -413,6 +417,15 @@ def _enrich_run(args) -> int:
                 rel = c.get("relation", "")
                 tags = c.get("tags", [])
                 print(f"✓ conf={confidence} rel={rel} tags={tags[:2]}")
+                # 写入补全日志（SPEC v2.5 §8.1.3 / v3.1 接入）
+                try:
+                    from enrich import _log_enrichment
+                    _log_enrichment(c.get("id", ""), name, [
+                        {"field": "relation", "to": rel, "confidence": confidence},
+                        {"field": "tags", "to": tags, "confidence": confidence},
+                    ])
+                except Exception:
+                    pass  # 日志失败不影响补全本身
             else:
                 skipped += 1
                 print(f"⏭ confidence={confidence} 跳过（<3 或无变化）")
@@ -489,10 +502,32 @@ def _depth_score(timeline, contact_id):
     return sum(scores) // len(scores)
 
 
-def cmd_health(args) -> int:
-    """关系健康分（v3.0 简化版）
+def _layers_score(contact) -> int:
+    """角色互动层数分（SPEC v2.5 §8.6.2）：x3=100, x2=66, x1=33, 无=0"""
+    layers = contact.get("_layers")
+    if layers is None:
+        try:
+            from engine import role_layers
+            layers = role_layers(contact)
+        except ImportError:
+            layers = []
+    n = len(layers or [])
+    if n >= 3: return 100
+    if n == 2: return 66
+    if n == 1: return 33
+    return 0
 
-    公式：health_score = recency × 0.4 + depth × 0.6
+
+def _health_score(r_score: int, d_score: int, l_score: int) -> int:
+    """v3.1 三因子公式：recency × 0.4 + depth × 0.3 + layers × 0.3"""
+    return int(r_score * 0.4 + d_score * 0.3 + l_score * 0.3)
+
+
+def cmd_health(args) -> int:
+    """关系健康分（v3.1 三因子版）
+
+    公式：health_score = recency × 0.4 + depth × 0.3 + layers × 0.3
+    默认只扫核心圈（strength≥3，SPEC v4 §17），--all 扫全量。
 
     等级：
     - 🟢 健康 (80-100)
@@ -505,7 +540,7 @@ def cmd_health(args) -> int:
         return 1
 
     try:
-        from engine import _load, CONTACTS_FILE, TIMELINE_FILE
+        from engine import _load, CONTACTS_FILE, TIMELINE_FILE, contact_tier
     except ImportError as e:
         print(f"✗ 无法加载 engine: {e}")
         return 1
@@ -518,6 +553,11 @@ def cmd_health(args) -> int:
         print("✗ contacts.json 格式异常")
         return 1
 
+    # 范围：默认核心圈；单人查询或 --all 时扫全量
+    scope_all = getattr(args, "all", False) or bool(args.contact)
+    if not scope_all:
+        contacts = [c for c in contacts if contact_tier(c) == "core"]
+
     # 计算每个联系人的健康分
     scored = []
     for c in contacts:
@@ -527,7 +567,8 @@ def cmd_health(args) -> int:
         days = _days_since(timeline, cid)
         d_score = _depth_score(timeline, cid)
         r_score = _recency_score(days)
-        total = int(r_score * 0.4 + d_score * 0.6)
+        l_score = _layers_score(c)
+        total = _health_score(r_score, d_score, l_score)
         scored.append({
             "contact": c,
             "name": c.get("name", "?"),
@@ -558,18 +599,21 @@ def cmd_health(args) -> int:
         days_str = f"{s['days']}天" if isinstance(s['days'], int) else "从未联系"
         recency = _recency_score(s['days'] if isinstance(s['days'], int) else 999)
         depth = _depth_score(timeline, s["contact"].get("id", ""))
+        layers = _layers_score(s["contact"])
         print(f"\n{_grade_icon(s['score'])} {s['name']} {s['score']}分 — {s['label']}")
         print(f"  强度: {s['strength']}")
         print(f"  距上次联系: {days_str}")
-        print(f"  recency: {recency}/100")
-        print(f"  depth: {depth}/100")
+        print(f"  recency: {recency}/100 (×0.4)")
+        print(f"  depth:   {depth}/100 (×0.3)")
+        print(f"  layers:  {layers}/100 (×0.3)")
         return 0
 
+    scope_note = "全量" if scope_all else "核心圈，--all 看全量"
     if args.fix:
         scored = [s for s in scored if s["score"] < 50]
-        print(f"\n⚠️ 需关注的健康问题（{len(scored)} 人）\n")
+        print(f"\n⚠️ 需关注的健康问题（{len(scored)} 人，{scope_note}）\n")
     else:
-        print(f"\n📊 关系健康分（{len(scored)} 人）\n")
+        print(f"\n📊 关系健康分（{len(scored)} 人，{scope_note}）\n")
 
     if args.ranking:
         scored.sort(key=lambda x: x["score"], reverse=True)
@@ -823,6 +867,122 @@ def cmd_send_check(args) -> int:
     return 0
 
 
+# ── v3.1 remind：日程提前提醒（本地 cron 调度，解耦 Claude Code CronCreate） ──
+
+import re as _re
+
+def _extract_event_time(text: str):
+    """从待办文本中提取时间标注，返回 (hour, minute) 或 None。
+
+    支持：14:30 / 14点 / 14点半 / 下午2点 / 晚上8点半
+    """
+    if not text:
+        return None
+    m = _re.search(r"(\d{1,2}):(\d{2})", text)
+    if m:
+        h, mi = int(m.group(1)), int(m.group(2))
+        if 0 <= h <= 23 and 0 <= mi <= 59:
+            return (h, mi)
+    m = _re.search(r"(上午|下午|晚上|中午)?\s*(\d{1,2})\s*点(半)?", text)
+    if m:
+        period, h, half = m.group(1), int(m.group(2)), m.group(3)
+        if h > 23:
+            return None
+        if period in ("下午", "晚上") and h < 12:
+            h += 12
+        elif period == "中午" and h < 11:
+            h += 12
+        mi = 30 if half else 0
+        return (h, mi) if h <= 23 else None
+    return None
+
+
+def cmd_remind(args) -> int:
+    """日程提前提醒（SPEC v4 §17 提醒调度解耦）
+
+    扫描今日到期的 pending 待办中带时间标注的日程，
+    落在 [now, now+ahead分钟] 窗口内的推送提醒。
+    去重状态记录在 data/remind_state.json（同一待办同一天只提醒一次）。
+    """
+    root = _ensure_project_path()
+    if root is None:
+        print("✗ 找不到 social-agent 项目根")
+        return 1
+
+    if args.cron:
+        print("📋 crontab 接入（本地调度，无需 Claude Code）：")
+        print("   crontab -e 添加一行：")
+        print(f"   */15 7-22 * * * cd {root} && {sys.executable} -m social_cli remind >> ~/.social-remind.log 2>&1")
+        return 0
+
+    try:
+        from engine import list_todos, get_contact
+    except ImportError as e:
+        print(f"✗ 无法加载 engine: {e}")
+        return 1
+
+    import json as _json
+    from datetime import date as _date, datetime as _dt, timedelta as _td
+
+    now = _dt.now()
+    today = _date.today().isoformat()
+    state_file = root / "data" / "remind_state.json"
+    state = {}
+    if state_file.exists():
+        try:
+            state = _json.loads(state_file.read_text(encoding="utf-8"))
+        except Exception:
+            state = {}
+
+    todos = [t for t in list_todos() if str(t.get("due", ""))[:10] == today]
+    hits = []
+    for t in todos:
+        # 优先从 due 的 ISO datetime 提取时间（如 2026-07-10T09:00:00），其次从任务文本
+        due = str(t.get("due", ""))
+        ev = None
+        if "T" in due:
+            m = _re.match(r"\d{4}-\d{2}-\d{2}T(\d{2}):(\d{2})", due)
+            if m:
+                ev = (int(m.group(1)), int(m.group(2)))
+        if not ev:
+            ev = _extract_event_time(t.get("task", ""))
+        if not ev:
+            continue
+        event_dt = now.replace(hour=ev[0], minute=ev[1], second=0, microsecond=0)
+        if now <= event_dt <= now + _td(minutes=args.ahead):
+            if state.get(t["id"]) == today:
+                continue  # 今天已提醒过
+            hits.append((t, event_dt))
+
+    if not hits:
+        print(f"✓ 未来 {args.ahead} 分钟内无需提醒的日程")
+        return 0
+
+    for t, event_dt in hits:
+        contact = get_contact(t.get("contact", ""))
+        name = contact["name"] if contact else t.get("contact", "")
+        msg = f"⏰ 日程提醒：{event_dt.strftime('%H:%M')} {name} — {t.get('task','')}"
+        if args.dry_run:
+            print(f"[dry-run] {msg}")
+            continue
+        try:
+            from push import push_to_wechat
+            ok, info = push_to_wechat("日程提醒", msg)
+            print(f"{'✓ 已推送' if ok else '⚠ 推送失败(' + info + ')'}: {msg}")
+        except ImportError:
+            ok = False
+            print(f"⚠ 推送模块不可用，仅打印: {msg}")
+        if not args.dry_run:
+            state[t["id"]] = today
+
+    if not args.dry_run:
+        try:
+            state_file.write_text(_json.dumps(state, ensure_ascii=False, indent=2), encoding="utf-8")
+        except Exception as e:
+            print(f"⚠ 提醒状态保存失败: {e}")
+    return 0
+
+
 def cmd_version(args) -> int:
     """显示版本"""
     print(f"social-cli {__version__}")
@@ -861,10 +1021,17 @@ def build_parser() -> argparse.ArgumentParser:
     p_enrich.add_argument("--web", action="store_true", help="启用网络搜索")
 
     # health
-    p_health = subparsers.add_parser("health", help="关系健康分")
+    p_health = subparsers.add_parser("health", help="关系健康分（默认核心圈）")
     p_health.add_argument("contact", nargs="?", help="联系人（可选）")
     p_health.add_argument("--fix", action="store_true", help="只看需关注的")
     p_health.add_argument("--ranking", action="store_true", help="排行榜")
+    p_health.add_argument("--all", action="store_true", help="扫全量联系人（默认仅核心圈 strength≥3）")
+
+    # remind (v3.1)
+    p_remind = subparsers.add_parser("remind", help="日程提前提醒（本地 cron 调度，v3.1）")
+    p_remind.add_argument("--ahead", type=int, default=60, metavar="MIN", help="提前提醒窗口分钟数（默认 60）")
+    p_remind.add_argument("--dry-run", action="store_true", help="只打印不推送")
+    p_remind.add_argument("--cron", action="store_true", help="打印 crontab 接入配置")
 
     # draft
     p_draft = subparsers.add_parser("draft", help="AI拟稿")
@@ -920,6 +1087,7 @@ _COMMANDS = {
     "draft": cmd_draft,
     "config": cmd_config,
     "chat": cmd_chat,
+    "remind": cmd_remind,
     "send": cmd_send,
     "send-check": cmd_send_check,
     "wxid-bind": cmd_wxid_bind,
