@@ -72,6 +72,26 @@ def _load_llm_config() -> dict:
     return {}
 
 
+def _load_claude_settings_env() -> dict:
+    """从 ~/.claude/settings.json 读取 env 段（系统已配置的 LLM 环境变量）
+
+    Claude Code 用户通常在 settings.json 的 env 段配置 API Key / base_url / model。
+    此函数让 social CLI 独立运行时也能复用这些配置，无需重复设置环境变量。
+    """
+    import json
+
+    settings_path = Path.home() / ".claude" / "settings.json"
+    if not settings_path.exists():
+        return {}
+
+    try:
+        with open(settings_path, "r", encoding="utf-8") as f:
+            cfg = json.load(f) or {}
+        return cfg.get("env", {}) or {}
+    except (json.JSONDecodeError, OSError):
+        return {}
+
+
 def get_client(force_new: bool = False) -> LLMClient:
     """获取 LLM Client 单例
 
@@ -93,6 +113,11 @@ def get_client(force_new: bool = False) -> LLMClient:
 
     if _client_instance is not None and not force_new:
         return _client_instance
+
+    # 从 ~/.claude/settings.json 注入系统已配置的环境变量（不覆盖已有值）
+    for key, val in _load_claude_settings_env().items():
+        if key not in os.environ and val:
+            os.environ[key] = val
 
     config = _load_llm_config()
 
