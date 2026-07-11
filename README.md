@@ -10,7 +10,7 @@
 **pip（推荐）**
 
 ```bash
-pip install -e .
+pip install social-agent
 ```
 
 **npm**
