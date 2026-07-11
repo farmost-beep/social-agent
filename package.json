@@ -1,6 +1,6 @@
 {
   "name": "@farmost/social-agent",
-  "version": "4.0.2",
+  "version": "4.0.3",
   "description": "社交关系AI管家 - 独立 CLI 工具。自动追踪社交关系，帮你拟消息、记待办、维护人脉。v3.0 起支持多 LLM provider（Claude/OpenAI/MiniMax）。",
   "author": {
     "name": "陈颖芳",

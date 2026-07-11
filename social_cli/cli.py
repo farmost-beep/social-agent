@@ -1366,11 +1366,29 @@ def cmd_remind(args) -> int:
     return 0
 
 
+def _check_latest_version() -> None:
+    """查询 PyPI 最新版本，有新版则提示。失败静默跳过。"""
+    try:
+        import json as _json
+        import urllib.request
+        url = "https://pypi.org/pypi/social-agent/json"
+        req = urllib.request.Request(url, headers={"User-Agent": "social-cli"})
+        with urllib.request.urlopen(req, timeout=3) as resp:
+            data = _json.loads(resp.read())
+        latest = data.get("info", {}).get("version", "")
+        if latest and latest != __version__:
+            print(f"\n  📦 有新版本: {latest}（当前 {__version__}）")
+            print(f"  更新命令: pip install --upgrade social-agent")
+    except Exception:
+        pass
+
+
 def cmd_version(args) -> int:
     """显示版本"""
     print(f"social-cli {__version__}")
     print(f"Python {sys.version.split()[0]}")
     print(f"路径: {Path(__file__).resolve().parent}")
+    _check_latest_version()
     return 0
 
 
