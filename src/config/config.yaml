@@ -1,0 +1,36 @@
+# 社交关系AI管家 - 配置文件
+# 复制此文件为 config.local.yaml 并按需修改
+# config.local.yaml 优先于 config.yaml
+
+# 数据存储路径（默认 ./data）
+data_dir: "./data"
+
+# AI模型配置
+ai:
+  engine: "claude"            # 可选: claude, openai
+  model: "claude-sonnet-4-6"
+  api_key_env: "ANTHROPIC_API_KEY"  # 从环境变量读取
+
+  # 拟稿风格配置（可选模板）
+  draft:
+    default_tone: "亲切"       # 默认语气: 亲切/正式/简洁
+    max_length: 80            # 消息最大字符数
+    signature: ""             # 消息签名（如 "-- 陈颖芳"）
+
+# 微信推送配置（可选）
+push:
+  enabled: false
+  channel: "cc-connect"
+  
+
+# 用户角色模板路径（可选）
+roles_template: "./config/roles.yaml"
+
+# 强度配置
+strength:
+  decay_days: 90              # 多少天无互动开始降级
+  upgrade_threshold: 2        # 60天内互动几次触发升级
+  max_auto_upgrade: 4         # 自动升级上限（不超过此值）
+  protected_roles:            # 永不自动调整的角色
+    - "self"
+    - "family"

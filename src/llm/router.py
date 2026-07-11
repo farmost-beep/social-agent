@@ -35,14 +35,33 @@ _client_instance: Optional[LLMClient] = None
 
 
 def _find_project_root() -> Optional[Path]:
-    """查找项目根目录（含 config/ 目录）"""
-    # 从当前文件向上找
-    p = Path(__file__).resolve()
-    for _ in range(5):  # 最多向上5层
-        if (p / "config").is_dir():
-            return p
-        p = p.parent
-    # 也试试当前工作目录
+    """查找项目根目录（含 config/ 目录）
+
+    优先级：
+    1. 环境变量 SOCIAL_AGENT_HOME
+    2. 包内目录（从 src/llm/router.py 向上两层）
+    3. ~/.social-agent/
+    4. 当前工作目录
+    """
+    # 1. 环境变量
+    env = os.environ.get("SOCIAL_AGENT_HOME")
+    if env and (Path(env) / "config").is_dir():
+        return Path(env)
+
+    # 2. 包内目录（开发模式：src/llm/ → src/ → 项目根；PyPI：src/llm/ → src/）
+    pkg_root = Path(__file__).resolve().parent.parent.parent
+    if (pkg_root / "config").is_dir():
+        return pkg_root
+    pkg_src = Path(__file__).resolve().parent.parent
+    if (pkg_src / "config").is_dir():
+        return pkg_src
+
+    # 3. PyPI 用户目录
+    user_dir = Path.home() / ".social-agent"
+    if user_dir.is_dir() and (user_dir / "config").is_dir():
+        return user_dir
+
+    # 4. 当前工作目录
     cwd = Path.cwd()
     if (cwd / "config").is_dir():
         return cwd

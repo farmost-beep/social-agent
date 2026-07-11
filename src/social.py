@@ -20,10 +20,10 @@
   social.py enrich [--batch N] [--dry-run] [--force] [--stats] [--web]                      批量画像补全（P0，--web 启用网络信源）
 """
 import sys, argparse
-from engine import *
-from ai import draft_message, generate_reminder
-from push import push_to_wechat, send_message
-from enrich import enrich_contact, count_from_log
+from src.engine import *
+from src.ai import draft_message, generate_reminder
+from src.push import push_to_wechat, send_message
+from src.enrich import enrich_contact, count_from_log
 
 def _has_flag(args, flag):
     """兼容 list（v2 手工解析）与 argparse Namespace（v3 CLI 转发）两种 args。"""

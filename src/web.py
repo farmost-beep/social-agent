@@ -2,9 +2,8 @@
 """社交关系AI管家 Web版 — 关键关系录入+看板"""
 from flask import Flask, render_template_string, request, redirect, url_for, jsonify
 import sys, os
-sys.path.insert(0, os.path.dirname(__file__))
-import engine as engine
-from ai import draft_message
+from src import engine as engine
+from src.ai import draft_message
 
 app = Flask(__name__)
 

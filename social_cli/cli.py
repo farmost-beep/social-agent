@@ -27,33 +27,46 @@ from typing import List, Optional
 from . import __version__
 
 # ── 项目根定位 ──
-# 全局 `social` 命令启动时 cwd 不一定是项目根，需要主动定位
-# 否则 `from src.social import ...` 会 ImportError
+# 用于定位数据目录（contacts.json 等）
+# 模块导入通过包机制（from src.engine import）工作，不再需要 sys.path hack
 
 _PROJECT_ROOT: Optional[Path] = None
 
 
 def _find_project_root() -> Optional[Path]:
-    """定位 social-agent 项目根目录
+    """定位 social-agent 项目根目录（含 config/ 和 data/）
 
     优先级：
     1. 环境变量 SOCIAL_AGENT_HOME
-    2. 向上 5 层找含 config/ 的目录
-    3. 向上 5 层找含 data/contacts.json 的目录
-    4. 当前工作目录（兜底）
+    2. social_cli 包的父目录（开发模式 pip install -e .）
+    3. src 包内目录（PyPI 安装，config/ 在 src/config/）
+    4. ~/.social-agent/（PyPI 用户目录）
+    5. 从 cwd 向上 5 层找含 config/ 和 src/ 的目录
     """
     # 1. 环境变量
     env = os.environ.get("SOCIAL_AGENT_HOME")
     if env and (Path(env) / "config").is_dir():
         return Path(env)
 
-    # 2/3. 从社会_cli 包位置向上找
-    # social_cli 在 .../social-agent/social_cli/，向上 1 层就是项目根
+    # 2. 从 social_cli 包位置向上找（开发模式）
     pkg_parent = Path(__file__).resolve().parent.parent
     if (pkg_parent / "config").is_dir():
         return pkg_parent
 
-    # 从 cwd 向上找
+    # 3. PyPI 安装：config/ 在 src 包内
+    import importlib.util
+    spec = importlib.util.find_spec("src")
+    if spec and spec.origin:
+        src_dir = Path(spec.origin).resolve().parent
+        if (src_dir / "config").is_dir():
+            return src_dir
+
+    # 4. PyPI 用户目录
+    user_dir = Path.home() / ".social-agent"
+    if user_dir.is_dir() and (user_dir / "config").is_dir():
+        return user_dir
+
+    # 5. 从 cwd 向上找
     cwd = Path.cwd()
     p = cwd
     for _ in range(5):
@@ -69,10 +82,10 @@ def _find_project_root() -> Optional[Path]:
 
 
 def _ensure_project_path() -> Optional[Path]:
-    """确保 social-agent 项目根和 src/ 在 sys.path 中，返回项目根或 None
+    """定位项目根并切换 cwd（让 engine.py 的相对数据路径解析正确）
 
-    src/social.py 使用 `from engine import *` 风格（不带 src. 前缀），
-    所以需要把 src/ 目录加到 sys.path，而不是项目根。
+    src/ 模块已改为包内导入（from src.engine import），
+    不再需要 sys.path hack。此函数仅用于数据目录定位。
     """
     global _PROJECT_ROOT
     if _PROJECT_ROOT is not None:
@@ -82,19 +95,7 @@ def _ensure_project_path() -> Optional[Path]:
     if root is None:
         return None
 
-    # 1. 把 src/ 目录加到 sys.path（让 `from engine import *` 工作）
-    src_dir = root / "src"
-    if src_dir.is_dir():
-        src_str = str(src_dir)
-        if src_str not in sys.path:
-            sys.path.insert(0, src_str)
-
-    # 2. 同时把项目根加进去（让 `from src.llm import ...` 工作）
-    root_str = str(root)
-    if root_str not in sys.path:
-        sys.path.insert(0, root_str)
-
-    # 3. 切换 cwd 到项目根（让 engine.py 的默认 data_dir=./data 解析正确）
+    # 切换 cwd 到项目根（让 engine.py 的默认 data_dir=./data 解析正确）
     if Path.cwd() != root:
         os.chdir(root)
 
@@ -137,7 +138,7 @@ def cmd_todos(args) -> int:
         print("✗ 找不到 social-agent 项目根")
         return 1
     try:
-        from engine import list_todos, _load, TODOS_FILE
+        from src.engine import list_todos, _load, TODOS_FILE
     except ImportError as e:
         print(f"✗ 无法加载 engine: {e}")
         return 1
@@ -358,7 +359,7 @@ def _enrich_run(args) -> int:
         return 1
 
     try:
-        from engine import _load, _save, CONTACTS_FILE
+        from src.engine import _load, _save, CONTACTS_FILE
         from src.llm import get_client
     except ImportError as e:
         print(f"✗ 无法加载依赖: {e}")
@@ -419,7 +420,7 @@ def _enrich_run(args) -> int:
                 print(f"✓ conf={confidence} rel={rel} tags={tags[:2]}")
                 # 写入补全日志（SPEC v2.5 §8.1.3 / v3.1 接入）
                 try:
-                    from enrich import _log_enrichment
+                    from src.enrich import _log_enrichment
                     _log_enrichment(c.get("id", ""), name, [
                         {"field": "relation", "to": rel, "confidence": confidence},
                         {"field": "tags", "to": tags, "confidence": confidence},
@@ -507,7 +508,7 @@ def _layers_score(contact) -> int:
     layers = contact.get("_layers")
     if layers is None:
         try:
-            from engine import role_layers
+            from src.engine import role_layers
             layers = role_layers(contact)
         except ImportError:
             layers = []
@@ -540,7 +541,7 @@ def cmd_health(args) -> int:
         return 1
 
     try:
-        from engine import _load, CONTACTS_FILE, TIMELINE_FILE, contact_tier
+        from src.engine import _load, CONTACTS_FILE, TIMELINE_FILE, contact_tier
     except ImportError as e:
         print(f"✗ 无法加载 engine: {e}")
         return 1
@@ -717,12 +718,12 @@ def cmd_anchor(args) -> int:
         print("✗ 找不到 social-agent 项目根")
         return 1
 
-    from engine import (
+    from src.engine import (
         load_goals, list_unanchored, list_anchored, anchor_stats,
         get_contact, resolve_contact, set_leverage, get_leverage,
         contact_tier, list_timeline,
     )
-    from ai import suggest_leverage
+    from src.ai import suggest_leverage
 
     goals_cfg = load_goals()
     goals = goals_cfg["goals"]
@@ -894,8 +895,8 @@ def cmd_advise(args) -> int:
         print("✗ 找不到 social-agent 项目根")
         return 1
 
-    from engine import advise_candidates
-    from ai import generate_advise_report
+    from src.engine import advise_candidates
+    from src.ai import generate_advise_report
 
     top = args.top
     tier = "all" if args.all else "core"
@@ -923,7 +924,7 @@ def cmd_advise(args) -> int:
         print(f"\n  📱 推送模式：尝试推送到微信...")
         # 复用 push 框架
         try:
-            from push import send_message
+            from src.push import send_message
             msg = "\n".join(f"{i}. {r['who']}: {r['what']}" for i, r in enumerate(report, 1))
             send_message(f"📋 本周经营建议\n{msg}")
             print("  ✓ 已推送")
@@ -940,7 +941,7 @@ def cmd_outcomes(args) -> int:
         print("✗ 找不到 social-agent 项目根")
         return 1
 
-    from engine import list_outcomes, outcome_stats, add_outcome, resolve_contact
+    from src.engine import list_outcomes, outcome_stats, add_outcome, resolve_contact
 
     # ── --add 模式：记录新成果 ──
     if args.add:
@@ -1194,7 +1195,7 @@ def cmd_wxid_bind(args) -> int:
         return 1
 
     try:
-        from engine import _load, _save, CONTACTS_FILE
+        from src.engine import _load, _save, CONTACTS_FILE
     except ImportError:
         print("✗ 无法加载 engine 模块")
         return 1
@@ -1298,7 +1299,7 @@ def cmd_remind(args) -> int:
         return 0
 
     try:
-        from engine import list_todos, get_contact
+        from src.engine import list_todos, get_contact
     except ImportError as e:
         print(f"✗ 无法加载 engine: {e}")
         return 1
@@ -1348,7 +1349,7 @@ def cmd_remind(args) -> int:
             print(f"[dry-run] {msg}")
             continue
         try:
-            from push import push_to_wechat
+            from src.push import push_to_wechat
             ok, info = push_to_wechat("日程提醒", msg)
             print(f"{'✓ 已推送' if ok else '⚠ 推送失败(' + info + ')'}: {msg}")
         except ImportError:

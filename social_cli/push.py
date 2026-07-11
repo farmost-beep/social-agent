@@ -22,9 +22,30 @@ from typing import Optional
 
 # ── 路径 ──
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-APPLESCRIPT = PROJECT_ROOT / "bin" / "send_to_wechat.applescript"
-DATA_DIR = PROJECT_ROOT / "data"
+def _get_home_dir():
+    """获取 social-agent 主目录（与 engine.py 同逻辑）"""
+    env = os.environ.get("SOCIAL_AGENT_HOME")
+    if env:
+        p = Path(env)
+        if p.is_dir():
+            return p
+    pkg_root = Path(__file__).resolve().parent.parent
+    if (pkg_root / "config").is_dir():
+        return pkg_root
+    # PyPI 安装：config/ 在 src/ 内
+    import importlib.util
+    spec = importlib.util.find_spec("src")
+    if spec and spec.origin:
+        src_dir = Path(spec.origin).resolve().parent
+        if (src_dir / "config").is_dir():
+            return src_dir
+    user_dir = Path.home() / ".social-agent"
+    user_dir.mkdir(parents=True, exist_ok=True)
+    return user_dir
+
+_HOME = _get_home_dir()
+APPLESCRIPT = _HOME / "bin" / "send_to_wechat.applescript"
+DATA_DIR = _HOME / "data"
 CONTACTS_FILE = DATA_DIR / "contacts.json"
 TIMELINE_FILE = DATA_DIR / "timeline.json"
 
@@ -58,10 +79,10 @@ def _push_via_bridge(contact_name: str, message: str) -> Optional[dict]:
         return None  # 无 wxid，回退 AppleScript
 
     # 2. 调用 send_via_bridge.mjs
-    bridge_script = Path("__file__").resolve().parent.parent.parent / "claude" / "scripts" / "send_via_bridge.mjs"
+    bridge_script = _HOME / "scripts" / "send_via_bridge.mjs"
     if not bridge_script.exists():
-        # 也试试绝对路径
-        bridge_script = Path("/Users/cyingfang/claude/scripts/send_via_bridge.mjs")
+        # 也试试 ~/claude/scripts/（wechat-claude-code 桥接默认位置）
+        bridge_script = Path.home() / "claude" / "scripts" / "send_via_bridge.mjs"
     if not bridge_script.exists():
         return None
 

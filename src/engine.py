@@ -5,11 +5,41 @@ from pathlib import Path
 
 # ── 配置加载 ──
 
+def _get_home_dir():
+    """获取 social-agent 主目录
+
+    优先级：
+    1. 环境变量 SOCIAL_AGENT_HOME
+    2. 包内目录（开发模式：src/engine.py 的父目录的父目录）
+    3. ~/.social-agent/（PyPI 用户目录）
+    """
+    env = os.environ.get("SOCIAL_AGENT_HOME")
+    if env:
+        p = Path(env)
+        if p.is_dir():
+            return p
+
+    # 包内目录（开发模式：src/engine.py → 项目根；PyPI：src/engine.py → src/）
+    pkg_root = Path(__file__).resolve().parent.parent
+    if (pkg_root / "config").is_dir():
+        return pkg_root
+    # PyPI 安装：config/ 在 src/ 内
+    pkg_src = Path(__file__).resolve().parent
+    if (pkg_src / "config").is_dir():
+        return pkg_src
+
+    # PyPI 用户目录
+    user_dir = Path.home() / ".social-agent"
+    user_dir.mkdir(parents=True, exist_ok=True)
+    return user_dir
+
+
 def _load_config():
     """读取 config.yaml，如不存在则使用默认值。"""
+    home = _get_home_dir()
     config_paths = [
-        Path(__file__).resolve().parent.parent / "config" / "config.local.yaml",
-        Path(__file__).resolve().parent.parent / "config" / "config.yaml",
+        home / "config" / "config.local.yaml",
+        home / "config" / "config.yaml",
     ]
     for cp in config_paths:
         if cp.exists():
@@ -18,7 +48,7 @@ def _load_config():
     return {}
 
 _CONFIG = _load_config()
-_DATA_DIR = Path(_CONFIG.get("data_dir", str(Path(__file__).resolve().parent.parent / "data")))
+_DATA_DIR = Path(_CONFIG.get("data_dir", str(_get_home_dir() / "data")))
 
 CONTACTS_FILE = _DATA_DIR / "contacts.json"
 TIMELINE_FILE = _DATA_DIR / "timeline.json"
@@ -777,9 +807,10 @@ def load_goals():
     返回 {"goals": [...], "directions": [...]}。
     文件缺失时返回默认六维框架（与 SPEC §18.1 一致）。
     """
+    home = _get_home_dir()
     paths = [
-        Path(__file__).resolve().parent.parent / "config" / "goals.local.yaml",
-        Path(__file__).resolve().parent.parent / "config" / "goals.yaml",
+        home / "config" / "goals.local.yaml",
+        home / "config" / "goals.yaml",
     ]
     for p in paths:
         if p.exists():

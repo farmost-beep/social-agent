@@ -15,10 +15,9 @@ import sys, os, time, json, subprocess
 from datetime import datetime, date
 from pathlib import Path
 
-sys.path.insert(0, os.path.dirname(__file__))
-from engine import *
-from push import push_to_wechat
-from intent import process_message
+from src.engine import *
+from src.push import push_to_wechat
+from src.intent import process_message
 
 
 def _get_strength_by_name(name):
