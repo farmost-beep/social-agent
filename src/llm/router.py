@@ -137,9 +137,14 @@ def get_client(force_new: bool = False) -> LLMClient:
     client_cls = _PROVIDERS[engine]
 
     # 构造客户端参数
-    # 注：不同 provider 接受不同参数，这里只传通用参数
+    # 优先级：环境变量 > config.yaml > client 默认值
     kwargs = {}
-    if "model" in config:
+    env_model = (
+        os.environ.get("ANTHROPIC_MODEL")
+        or os.environ.get("OPENAI_MODEL")
+        or os.environ.get("LLM_MODEL")
+    )
+    if not env_model and "model" in config:
         kwargs["model"] = config["model"]
     if "api_key" in config:
         kwargs["api_key"] = config["api_key"]
