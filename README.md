@@ -25,7 +25,7 @@ npx @farmost/social-agent status
 bash <(curl -sL https://raw.githubusercontent.com/farmost-beep/social-agent/main/install.sh)
 ```
 
-安装后设置 API Key（三选一）：
+已配置 Claude Code（`~/.claude/settings.json`）的用户无需额外设置，CLI 自动复用系统 LLM 配置。未配置则三选一：
 
 ```bash
 export ANTHROPIC_API_KEY=sk-ant-...                    # Claude（默认）
