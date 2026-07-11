@@ -1,0 +1,962 @@
+    INFO: 2026-07-10 22:51:46,461:               log.py:   20: Logging to /Users/cyingfang/.claude/skills/social-agent/docs/mdpdf.log
+   DEBUG: 2026-07-10 22:51:46,461:               cli.py:  103: COMPETITIVE_ANALYSIS.md
+    INFO: 2026-07-10 22:51:46,464:         converter.py:   14: COMPETITIVE_ANALYSIS.md
+   DEBUG: 2026-07-10 22:51:46,474:      pdf_renderer.py:  470: printSegment: title: social-agent 竞品深度研究：差异、定位与痛点
+   DEBUG: 2026-07-10 22:51:46,528:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,529:      pdf_renderer.py:  470: printSegment: version: 1.0.0
+   DEBUG: 2026-07-10 22:51:46,529:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,529:      pdf_renderer.py:  470: printSegment: updated: 2026-07-10
+   DEBUG: 2026-07-10 22:51:46,530:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,530:      pdf_renderer.py:  470: printSegment: status: 生效
+   DEBUG: 2026-07-10 22:51:46,530:      pdf_renderer.py:  470: printSegment: social-agent 竞品深度研究
+   DEBUG: 2026-07-10 22:51:46,531:      pdf_renderer.py:  470: printSegment: 本文档是产品决策依据，不是营销材料。
+   DEBUG: 2026-07-10 22:51:46,582:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,583:      pdf_renderer.py:  470: printSegment: 调研覆盖 15+ 竞品，数据来源为各产品官网、App Store、第三方评测（2025-2026）及用户反馈。
+   DEBUG: 2026-07-10 22:51:46,634:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,634:      pdf_renderer.py:  470: printSegment: 最后更新：2026-07-10
+   DEBUG: 2026-07-10 22:51:46,686:      pdf_renderer.py:  470: printSegment: 一、市场全景：四个赛道，同一痛点
+   DEBUG: 2026-07-10 22:51:46,686:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,686:      pdf_renderer.py:  470: printSegment: 社交关系管理
+   DEBUG: 2026-07-10 22:51:46,686:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,687:      pdf_renderer.py:  470: printSegment: 产品可分为四个赛道，看似同质但定位根本不同。
+   DEBUG: 2026-07-10 22:51:46,687:      pdf_renderer.py:  470: printSegment: 赛道 A：社交平台（微信 / LinkedIn / 朋友圈）
+   DEBUG: 2026-07-10 22:51:46,687:      pdf_renderer.py:  470: printSegment: | 维度 | 微信 | LinkedIn |
+   DEBUG: 2026-07-10 22:51:46,688:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,688:      pdf_renderer.py:  470: printSegment: |:----|:----|:----|
+   DEBUG: 2026-07-10 22:51:46,688:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,689:      pdf_renderer.py:  470: printSegment: | 本质 | 
+   DEBUG: 2026-07-10 22:51:46,689:      pdf_renderer.py:  470: printSegment: 通信管道
+   DEBUG: 2026-07-10 22:51:46,689:      pdf_renderer.py:  470: printSegment:  + 社交广场 | 
+   DEBUG: 2026-07-10 22:51:46,690:      pdf_renderer.py:  470: printSegment: 职业档案柜
+   DEBUG: 2026-07-10 22:51:46,690:      pdf_renderer.py:  470: printSegment:  + 弱关系广场 |
+   DEBUG: 2026-07-10 22:51:46,690:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,691:      pdf_renderer.py:  470: printSegment: | 关系管理 | 无——通讯录是平的，没有分层/强度/目标 | 无——connections 是计数器，不是关系深度 |
+   DEBUG: 2026-07-10 22:51:46,691:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,691:      pdf_renderer.py:  470: printSegment: | 核心动作 | 聊天、朋友圈、群 | 发帖、连接、求职 |
+   DEBUG: 2026-07-10 22:51:46,692:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,692:      pdf_renderer.py:  470: printSegment: | 痛点 | 4683 个联系人平铺，找不到
+   DEBUG: 2026-07-10 22:51:46,692:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,692:      pdf_renderer.py:  470: printSegment: 该联系谁
+   DEBUG: 2026-07-10 22:51:46,693:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,693:      pdf_renderer.py:  470: printSegment: ；朋友圈是广播不是经营；没有
+   DEBUG: 2026-07-10 22:51:46,743:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,744:      pdf_renderer.py:  470: printSegment: 上次聊了什么
+   DEBUG: 2026-07-10 22:51:46,744:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,745:      pdf_renderer.py:  470: printSegment: 的记忆 | 连接数是虚荣指标；500+
+   DEBUG: 2026-07-10 22:51:46,745:      pdf_renderer.py:  470: printSegment: connections 但 90% 从不互动；没有
+   DEBUG: 2026-07-10 22:51:46,745:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,746:      pdf_renderer.py:  470: printSegment: 该经营谁
+   DEBUG: 2026-07-10 22:51:46,746:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,746:      pdf_renderer.py:  470: printSegment: 的判断 |
+   DEBUG: 2026-07-10 22:51:46,747:      pdf_renderer.py:  470: printSegment: 关键诊断
+   DEBUG: 2026-07-10 22:51:46,747:      pdf_renderer.py:  470: printSegment: ：微信和 LinkedIn 是
+   DEBUG: 2026-07-10 22:51:46,747:      pdf_renderer.py:  470: printSegment: 社交基础设施
+   DEBUG: 2026-07-10 22:51:46,748:      pdf_renderer.py:  470: printSegment: ，不是关系管理工具。它们解决了
+   DEBUG: 2026-07-10 22:51:46,748:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,748:      pdf_renderer.py:  470: printSegment: 连接
+   DEBUG: 2026-07-10 22:51:46,748:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,749:      pdf_renderer.py:  470: printSegment: 问题，但完全不解决
+   DEBUG: 2026-07-10 22:51:46,749:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,749:      pdf_renderer.py:  470: printSegment: 经营
+   DEBUG: 2026-07-10 22:51:46,750:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,750:      pdf_renderer.py:  470: printSegment: 问题。用户的 4683 个微信联系人就是证据——存得下，用不起来。
+   DEBUG: 2026-07-10 22:51:46,750:      pdf_renderer.py:  470: printSegment: 赛道 B：个人 CRM（Clay / Dex / Monica / Norrie / Keep / 脉客）
+   DEBUG: 2026-07-10 22:51:46,751:      pdf_renderer.py:  470: printSegment: 2021 年后兴起的新赛道，已高度拥挤：
+   DEBUG: 2026-07-10 22:51:46,751:      pdf_renderer.py:  470: printSegment: | 产品 | 定位 | 核心机制 | 价格 | 数据来源 |
+   DEBUG: 2026-07-10 22:51:46,752:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,752:      pdf_renderer.py:  470: printSegment: |:----|:----|:----|:----|:----|
+   DEBUG: 2026-07-10 22:51:46,752:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,753:      pdf_renderer.py:  470: printSegment: | 
+   DEBUG: 2026-07-10 22:51:46,753:      pdf_renderer.py:  470: printSegment: Clay
+   DEBUG: 2026-07-10 22:51:46,753:      pdf_renderer.py:  470: printSegment:  (→Mesh) | 
+   DEBUG: 2026-07-10 22:51:46,754:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,754:      pdf_renderer.py:  470: printSegment: 自动更新的关系网
+   DEBUG: 2026-07-10 22:51:46,754:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,755:      pdf_renderer.py:  470: printSegment:  | 邮件/日历/LinkedIn/Twitter 自动导入+enrichment | $120/年 | 自动采集 |
+   DEBUG: 2026-07-10 22:51:46,755:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,755:      pdf_renderer.py:  470: printSegment: | 
+   DEBUG: 2026-07-10 22:51:46,756:      pdf_renderer.py:  470: printSegment: Dex
+   DEBUG: 2026-07-10 22:51:46,756:      pdf_renderer.py:  470: printSegment:  | 
+   DEBUG: 2026-07-10 22:51:46,756:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,757:      pdf_renderer.py:  470: printSegment: 有节奏地保持联系
+   DEBUG: 2026-07-10 22:51:46,757:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,758:      pdf_renderer.py:  470: printSegment:  |
+   DEBUG: 2026-07-10 22:51:46,758:      pdf_renderer.py:  470: printSegment: LinkedIn+Gmail 同步+follow-up cadence | $144/年 | 半自动 |
+   DEBUG: 2026-07-10 22:51:46,759:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,759:      pdf_renderer.py:  470: printSegment: | 
+   DEBUG: 2026-07-10 22:51:46,759:      pdf_renderer.py:  470: printSegment: Monica
+   DEBUG: 2026-07-10 22:51:46,760:      pdf_renderer.py:  470: printSegment:  | 
+   DEBUG: 2026-07-10 22:51:46,760:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,760:      pdf_renderer.py:  470: printSegment: 开源私有日记式 CRM
+   DEBUG: 2026-07-10 22:51:46,761:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,761:      pdf_renderer.py:  470: printSegment:  | 手动记录活动/礼物/债务/家庭 | $90/年或自托管 | 全手动 |
+   DEBUG: 2026-07-10 22:51:46,761:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,762:      pdf_renderer.py:  470: printSegment: | 
+   DEBUG: 2026-07-10 22:51:46,762:      pdf_renderer.py:  470: printSegment: Norrie
+   DEBUG: 2026-07-10 22:51:46,762:      pdf_renderer.py:  470: printSegment:  | 
+   DEBUG: 2026-07-10 22:51:46,763:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,763:      pdf_renderer.py:  470: printSegment: 真实生活的人际管理
+   DEBUG: 2026-07-10 22:51:46,763:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,764:      pdf_renderer.py:  470: printSegment:  | packs of
+   DEBUG: 2026-07-10 22:51:46,765:      pdf_renderer.py:  470: printSegment: memory（宠物/礼物/人生事件） | 20人免费 | 全手动 |
+   DEBUG: 2026-07-10 22:51:46,765:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,765:      pdf_renderer.py:  470: printSegment: | 
+   DEBUG: 2026-07-10 22:51:46,766:      pdf_renderer.py:  470: printSegment: Keep
+   DEBUG: 2026-07-10 22:51:46,766:      pdf_renderer.py:  470: printSegment:  | 
+   DEBUG: 2026-07-10 22:51:46,766:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,767:      pdf_renderer.py:  470: printSegment: 语音优先的 AI CRM
+   DEBUG: 2026-07-10 22:51:46,767:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,767:      pdf_renderer.py:  470: printSegment:  | 说10秒→AI 提取人/日期/跟进 | iOS | 语音 |
+   DEBUG: 2026-07-10 22:51:46,768:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,768:      pdf_renderer.py:  470: printSegment: | 
+   DEBUG: 2026-07-10 22:51:46,769:      pdf_renderer.py:  470: printSegment: 脉客 Connectors
+   DEBUG: 2026-07-10 22:51:46,769:      pdf_renderer.py:  470: printSegment:  | 
+   DEBUG: 2026-07-10 22:51:46,769:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,770:      pdf_renderer.py:  470: printSegment: AI 人脉教练
+   DEBUG: 2026-07-10 22:51:46,770:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,770:      pdf_renderer.py:  470: printSegment:  | 名片扫描+互动记录+案件漏斗 | 800人免费 | 半自动 |
+   DEBUG: 2026-07-10 22:51:46,771:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,771:      pdf_renderer.py:  470: printSegment: | 
+   DEBUG: 2026-07-10 22:51:46,771:      pdf_renderer.py:  470: printSegment: 钛合金人脉
+   DEBUG: 2026-07-10 22:51:46,772:      pdf_renderer.py:  470: printSegment:  | 
+   DEBUG: 2026-07-10 22:51:46,772:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,772:      pdf_renderer.py:  470: printSegment: 5+50+100 人脉圈
+   DEBUG: 2026-07-10 22:51:46,773:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,773:      pdf_renderer.py:  470: printSegment:  | 基于《给予者》方法论 | — |
+   DEBUG: 2026-07-10 22:51:46,774:      pdf_renderer.py:  470: printSegment: 全手动 |
+   DEBUG: 2026-07-10 22:51:46,774:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,774:      pdf_renderer.py:  470: printSegment: | 
+   DEBUG: 2026-07-10 22:51:46,775:      pdf_renderer.py:  470: printSegment: Yenesow
+   DEBUG: 2026-07-10 22:51:46,775:      pdf_renderer.py:  470: printSegment:  | 
+   DEBUG: 2026-07-10 22:51:46,775:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,776:      pdf_renderer.py:  470: printSegment: AI-first 个人 CRM
+   DEBUG: 2026-07-10 22:51:46,776:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,777:      pdf_renderer.py:  470: printSegment:  | AI 健康分+对话开场白+关系图谱 | iOS | 全手动+AI |
+   DEBUG: 2026-07-10 22:51:46,777:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,777:      pdf_renderer.py:  470: printSegment: | 
+   DEBUG: 2026-07-10 22:51:46,778:      pdf_renderer.py:  470: printSegment: Orbit
+   DEBUG: 2026-07-10 22:51:46,778:      pdf_renderer.py:  470: printSegment:  | 
+   DEBUG: 2026-07-10 22:51:46,778:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,779:      pdf_renderer.py:  470: printSegment: AI 捐赠者关系管理
+   DEBUG: 2026-07-10 22:51:46,779:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,779:      pdf_renderer.py:  470: printSegment:  | 面向非营利组织捐赠者经营 | 企业级 | 半自动 |
+   DEBUG: 2026-07-10 22:51:46,780:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,780:      pdf_renderer.py:  470: printSegment: | 
+   DEBUG: 2026-07-10 22:51:46,781:      pdf_renderer.py:  470: printSegment: Dayze
+   DEBUG: 2026-07-10 22:51:46,781:      pdf_renderer.py:  470: printSegment:  | 
+   DEBUG: 2026-07-10 22:51:46,781:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,782:      pdf_renderer.py:  470: printSegment: 时间线个人 CRM
+   DEBUG: 2026-07-10 22:51:46,782:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,782:      pdf_renderer.py:  470: printSegment:  | 关系绑定人生天数+里程碑 | — | 手动 |
+   DEBUG: 2026-07-10 22:51:46,783:      pdf_renderer.py:  470: printSegment: 赛道共性
+   DEBUG: 2026-07-10 22:51:46,783:      pdf_renderer.py:  470: printSegment: ：全部聚焦
+   DEBUG: 2026-07-10 22:51:46,784:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,784:      pdf_renderer.py:  470: printSegment: 记住上次聊了什么 + 提醒该联系谁
+   DEBUG: 2026-07-10 22:51:46,784:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,785:      pdf_renderer.py:  470: printSegment: ——即 social-agent v2.x 的水平。
+   DEBUG: 2026-07-10 22:51:46,785:      pdf_renderer.py:  470: printSegment: 赛道分化轴
+   DEBUG: 2026-07-10 22:51:46,786:      pdf_renderer.py:  470: printSegment: （OpenLoop 2026 总结）：
+   DEBUG: 2026-07-10 22:51:46,786:      pdf_renderer.py:  470: printSegment:  1 
+   DEBUG: 2026-07-10 22:51:46,786:      pdf_renderer.py:  470: printSegment: 自动同步 vs 手动记录
+   DEBUG: 2026-07-10 22:51:46,787:      pdf_renderer.py:  470: printSegment: ：Clay 自动 vs Monica 全手动
+   DEBUG: 2026-07-10 22:51:46,787:      pdf_renderer.py:  470: printSegment:  2 
+   DEBUG: 2026-07-10 22:51:46,788:      pdf_renderer.py:  470: printSegment: 职业 vs 全生活
+   DEBUG: 2026-07-10 22:51:46,788:      pdf_renderer.py:  470: printSegment: ：Dex 职业偏向 vs Norrie 生活偏向
+   DEBUG: 2026-07-10 22:51:46,788:      pdf_renderer.py:  470: printSegment:  3 
+   DEBUG: 2026-07-10 22:51:46,789:      pdf_renderer.py:  470: printSegment: AI 深度
+   DEBUG: 2026-07-10 22:51:46,789:      pdf_renderer.py:  470: printSegment: ：Keep/Yenesow AI-first vs Monica 几乎无 AI
+   DEBUG: 2026-07-10 22:51:46,790:      pdf_renderer.py:  470: printSegment: 赛道 C：企业 CRM 降维（Salesforce / HubSpot / Zoho 个人版）
+   DEBUG: 2026-07-10 22:51:46,790:      pdf_renderer.py:  470: printSegment: | 维度 | 特征 |
+   DEBUG: 2026-07-10 22:51:46,791:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,791:      pdf_renderer.py:  470: printSegment: |:----|:----|
+   DEBUG: 2026-07-10 22:51:46,791:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,792:      pdf_renderer.py:  470: printSegment: | 本质 | 销售漏斗管理 |
+   DEBUG: 2026-07-10 22:51:46,792:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,793:      pdf_renderer.py:  470: printSegment: | 关系定义 | 交易关系（lead → opportunity → deal） |
+   DEBUG: 2026-07-10 22:51:46,793:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,793:      pdf_renderer.py:  470: printSegment: | 痛点 | 字段太多太乱、录入体验极差、被当监控而非工具 |
+   DEBUG: 2026-07-10 22:51:46,794:      pdf_renderer.py:  470: printSegment: Zoho 调研数据
+   DEBUG: 2026-07-10 22:51:46,794:      pdf_renderer.py:  470: printSegment: ：64% 单用户 CRM 用户
+   DEBUG: 2026-07-10 22:51:46,795:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,795:      pdf_renderer.py:  470: printSegment: 功能不够用
+   DEBUG: 2026-07-10 22:51:46,796:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,796:      pdf_renderer.py:  470: printSegment: ，但更常见是
+   DEBUG: 2026-07-10 22:51:46,796:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,797:      pdf_renderer.py:  470: printSegment: 用着用着就弃了
+   DEBUG: 2026-07-10 22:51:46,797:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,797:      pdf_renderer.py:  470: printSegment: 。核心原因：录入摩擦 > 感知价值。
+   DEBUG: 2026-07-10 22:51:46,798:      pdf_renderer.py:  470: printSegment: 关键诊断
+   DEBUG: 2026-07-10 22:51:46,798:      pdf_renderer.py:  470: printSegment: ：企业 CRM 的
+   DEBUG: 2026-07-10 22:51:46,799:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,799:      pdf_renderer.py:  470: printSegment: 漏斗
+   DEBUG: 2026-07-10 22:51:46,799:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,800:      pdf_renderer.py:  470: printSegment: 心智模型不适用于个人关系——人际关系不是 lead → deal 的线性管道。
+   DEBUG: 2026-07-10 22:51:46,800:      pdf_renderer.py:  470: printSegment: 赛道 D：AI 对话辅助（Convo / Qubi / Diggsi）
+   DEBUG: 2026-07-10 22:51:46,801:      pdf_renderer.py:  470: printSegment: | 产品 | 定位 |
+   DEBUG: 2026-07-10 22:51:46,801:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,802:      pdf_renderer.py:  470: printSegment: |:----|:----|
+   DEBUG: 2026-07-10 22:51:46,802:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,803:      pdf_renderer.py:  470: printSegment: | Convo | 会议中实时建议 + 会后自动跟进 |
+   DEBUG: 2026-07-10 22:51:46,803:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,803:      pdf_renderer.py:  470: printSegment: | Qubi | 销售通话实时教练 |
+   DEBUG: 2026-07-10 22:51:46,804:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,804:      pdf_renderer.py:  470: printSegment: | Diggsi | LinkedIn 资料分析 → 对话开场白 |
+   DEBUG: 2026-07-10 22:51:46,805:      pdf_renderer.py:  470: printSegment: 关键诊断
+   DEBUG: 2026-07-10 22:51:46,805:      pdf_renderer.py:  470: printSegment: ：这些是
+   DEBUG: 2026-07-10 22:51:46,806:      pdf_renderer.py:  470: printSegment: 单次对话的辅助
+   DEBUG: 2026-07-10 22:51:46,806:      pdf_renderer.py:  470: printSegment: ，不是长期关系管理。它们解决
+   DEBUG: 2026-07-10 22:51:46,806:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,807:      pdf_renderer.py:  470: printSegment: 这次聊什么
+   DEBUG: 2026-07-10 22:51:46,807:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,808:      pdf_renderer.py:  470: printSegment: ，但不解决
+   DEBUG: 2026-07-10 22:51:46,808:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,808:      pdf_renderer.py:  470: printSegment: 这半年该经营谁
+   DEBUG: 2026-07-10 22:51:46,809:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,809:      pdf_renderer.py:  470: printSegment: 。
+   DEBUG: 2026-07-10 22:51:46,810:      pdf_renderer.py:  470: printSegment: 二、social-agent 的定位差异：五个独有维度
+   DEBUG: 2026-07-10 22:51:46,811:      pdf_renderer.py:  470: printSegment: 把 social-agent 放在上述四个赛道中，差异不是功能层面的，而是
+   DEBUG: 2026-07-10 22:51:46,811:      pdf_renderer.py:  470: printSegment: 哲学层面的
+   DEBUG: 2026-07-10 22:51:46,811:      pdf_renderer.py:  470: printSegment: 。
+   DEBUG: 2026-07-10 22:51:46,812:      pdf_renderer.py:  470: printSegment: 差异 1：目标锚定——从
+   DEBUG: 2026-07-10 22:51:46,812:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,812:      pdf_renderer.py:  470: printSegment: 记住谁
+   DEBUG: 2026-07-10 22:51:46,813:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,813:      pdf_renderer.py:  470: printSegment: 到
+   DEBUG: 2026-07-10 22:51:46,813:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,813:      pdf_renderer.py:  470: printSegment: 为什么经营
+   DEBUG: 2026-07-10 22:51:46,814:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,814:      pdf_renderer.py:  470: printSegment: | 维度 | 所有竞品 | social-agent v4.0 |
+   DEBUG: 2026-07-10 22:51:46,814:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,815:      pdf_renderer.py:  470: printSegment: |:----|:----|:----|
+   DEBUG: 2026-07-10 22:51:46,815:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,815:      pdf_renderer.py:  470: printSegment: | 关系管理的基础 | 
+   DEBUG: 2026-07-10 22:51:46,815:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,816:      pdf_renderer.py:  470: printSegment: 上次聊了什么
+   DEBUG: 2026-07-10 22:51:46,816:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,816:      pdf_renderer.py:  470: printSegment:  + 
+   DEBUG: 2026-07-10 22:51:46,816:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,817:      pdf_renderer.py:  470: printSegment: 多久没联系
+   DEBUG: 2026-07-10 22:51:46,817:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,817:      pdf_renderer.py:  470: printSegment:  | 
+   DEBUG: 2026-07-10 22:51:46,817:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,818:      pdf_renderer.py:  470: printSegment: 这个人对我哪个目标有贡献
+   DEBUG: 2026-07-10 22:51:46,818:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,818:      pdf_renderer.py:  470: printSegment:  + 
+   DEBUG: 2026-07-10 22:51:46,819:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,819:      pdf_renderer.py:  470: printSegment: 怎么经营
+   DEBUG: 2026-07-10 22:51:46,819:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,819:      pdf_renderer.py:  470: printSegment:  |
+   DEBUG: 2026-07-10 22:51:46,820:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,820:      pdf_renderer.py:  470: printSegment: | 数据模型 | timeline + reminder | 
+   DEBUG: 2026-07-10 22:51:46,820:      pdf_renderer.py:  470: printSegment: leverage{goals, how,
+   DEBUG: 2026-07-10 22:51:46,821:      pdf_renderer.py:  470: printSegment: direction, confirmed}
+   DEBUG: 2026-07-10 22:51:46,821:      pdf_renderer.py:  470: printSegment:  + timeline |
+   DEBUG: 2026-07-10 22:51:46,821:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,822:      pdf_renderer.py:  470: printSegment: | 建议引擎输入 | 冷却状态、生日 | 冷却 + 生日 + 
+   DEBUG: 2026-07-10 22:51:46,822:      pdf_renderer.py:  470: printSegment: leverage 锚定
+   DEBUG: 2026-07-10 22:51:46,822:      pdf_renderer.py:  470: printSegment:  + 待办 + 强度（五信号源） |
+   DEBUG: 2026-07-10 22:51:46,823:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,823:      pdf_renderer.py:  470: printSegment: | 建议输出 | 
+   DEBUG: 2026-07-10 22:51:46,823:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,824:      pdf_renderer.py:  470: printSegment: 3个月没联系了，该问候一下
+   DEBUG: 2026-07-10 22:51:46,824:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,824:      pdf_renderer.py:  470: printSegment:  | 
+   DEBUG: 2026-07-10 22:51:46,824:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,825:      pdf_renderer.py:  470: printSegment: 联系谁 + 为什么（锚定目标）+ 聊什么（具体话题）
+   DEBUG: 2026-07-10 22:51:46,825:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,825:      pdf_renderer.py:  470: printSegment: 三元组
+   DEBUG: 2026-07-10 22:51:46,826:      pdf_renderer.py:  470: printSegment:  |
+   DEBUG: 2026-07-10 22:51:46,826:      pdf_renderer.py:  470: printSegment: 这是所有竞品都没有的维度。
+   DEBUG: 2026-07-10 22:51:46,826:      pdf_renderer.py:  470: printSegment:  Clay 的 enrichment 是
+   DEBUG: 2026-07-10 22:51:46,827:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,827:      pdf_renderer.py:  470: printSegment: 对方换了工作
+   DEBUG: 2026-07-10 22:51:46,827:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,828:      pdf_renderer.py:  470: printSegment: ——关于对方的事实；social-agent 的 leverage 是
+   DEBUG: 2026-07-10 22:51:46,828:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,828:      pdf_renderer.py:  470: printSegment: 这个人能帮我撬动事业目标
+   DEBUG: 2026-07-10 22:51:46,828:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,829:      pdf_renderer.py:  470: printSegment: ——关于
+   DEBUG: 2026-07-10 22:51:46,829:      pdf_renderer.py:  470: printSegment: 关系与我的目标的映射
+   DEBUG: 2026-07-10 22:51:46,829:      pdf_renderer.py:  470: printSegment: 。前者是信息，后者是策略。
+   DEBUG: 2026-07-10 22:51:46,830:      pdf_renderer.py:  470: printSegment: 调研中最接近的是
+   DEBUG: 2026-07-10 22:51:46,830:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,830:      pdf_renderer.py:  470: printSegment: 钛合金人脉
+   DEBUG: 2026-07-10 22:51:46,831:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,831:      pdf_renderer.py:  470: printSegment: （基于《给予者》5+50+100 方法论），但它只做了分层，没做目标映射。askcruit 的
+   DEBUG: 2026-07-10 22:51:46,831:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,832:      pdf_renderer.py:  470: printSegment: Track Goals, Not Dates
+   DEBUG: 2026-07-10 22:51:46,832:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,832:      pdf_renderer.py:  470: printSegment: 理念相近，但那是博客建议，不是产品功能。
+   DEBUG: 2026-07-10 22:51:46,833:      pdf_renderer.py:  470: printSegment: 差异 2：社交价值理论——从
+   DEBUG: 2026-07-10 22:51:46,833:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,833:      pdf_renderer.py:  470: printSegment: 情感亲疏
+   DEBUG: 2026-07-10 22:51:46,834:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,834:      pdf_renderer.py:  470: printSegment: 到
+   DEBUG: 2026-07-10 22:51:46,834:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,834:      pdf_renderer.py:  470: printSegment: 目标贡献度
+   DEBUG: 2026-07-10 22:51:46,835:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,835:      pdf_renderer.py:  470: printSegment: | 维度 | 传统社交直觉 | 所有竞品 | social-agent |
+   DEBUG: 2026-07-10 22:51:46,835:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,836:      pdf_renderer.py:  470: printSegment: |:----|:----|:----|:----|
+   DEBUG: 2026-07-10 22:51:46,836:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,837:      pdf_renderer.py:  470: printSegment: | 强度定义 | 关系好坏/感情深浅 | 互动频率（Clay）/ 手动标签（Dex）/ 无（Monica） | 
+   DEBUG: 2026-07-10 22:51:46,837:      pdf_renderer.py:  470: printSegment: 社交价值 = 对用户六维目标的贡献度
+   DEBUG: 2026-07-10 22:51:46,837:      pdf_renderer.py:  470: printSegment:  |
+   DEBUG: 2026-07-10 22:51:46,838:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,838:      pdf_renderer.py:  470: printSegment: | 强度排序 | 按感情 | 按互动频率 | 
+   DEBUG: 2026-07-10 22:51:46,838:      pdf_renderer.py:  470: printSegment: 按目标撬动力
+   DEBUG: 2026-07-10 22:51:46,839:      pdf_renderer.py:  470: printSegment:  |
+   DEBUG: 2026-07-10 22:51:46,839:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,839:      pdf_renderer.py:  470: printSegment: | 强度调整 | 不调整 | Clay 按互动频率自动调整 | 
+   DEBUG: 2026-07-10 22:51:46,840:      pdf_renderer.py:  470: printSegment: 按社交价值变化调整（换工作/合作深化）
+   DEBUG: 2026-07-10 22:51:46,840:      pdf_renderer.py:  470: printSegment:  |
+   DEBUG: 2026-07-10 22:51:46,840:      pdf_renderer.py:  470: printSegment: 这是理论层面的根本差异。
+   DEBUG: 2026-07-10 22:51:46,841:      pdf_renderer.py:  470: printSegment:  竞品的
+   DEBUG: 2026-07-10 22:51:46,841:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,841:      pdf_renderer.py:  470: printSegment: 关系强度
+   DEBUG: 2026-07-10 22:51:46,842:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,842:      pdf_renderer.py:  470: printSegment: 是互动频率的副产品，social-agent 的
+   DEBUG: 2026-07-10 22:51:46,842:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,843:      pdf_renderer.py:  470: printSegment: 强度
+   DEBUG: 2026-07-10 22:51:46,843:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,843:      pdf_renderer.py:  470: printSegment: 是社交价值的显式评估。前者回答
+   DEBUG: 2026-07-10 22:51:46,844:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,844:      pdf_renderer.py:  470: printSegment: 我们互动多吗
+   DEBUG: 2026-07-10 22:51:46,844:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,845:      pdf_renderer.py:  470: printSegment: ，后者回答
+   DEBUG: 2026-07-10 22:51:46,845:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,845:      pdf_renderer.py:  470: printSegment: 这个人对我重要吗
+   DEBUG: 2026-07-10 22:51:46,846:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,846:      pdf_renderer.py:  470: printSegment: 。
+   DEBUG: 2026-07-10 22:51:46,846:      pdf_renderer.py:  470: printSegment: 差异 3：建议引擎——从
+   DEBUG: 2026-07-10 22:51:46,847:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,847:      pdf_renderer.py:  470: printSegment: 提醒
+   DEBUG: 2026-07-10 22:51:46,847:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,848:      pdf_renderer.py:  470: printSegment: 到
+   DEBUG: 2026-07-10 22:51:46,848:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,848:      pdf_renderer.py:  470: printSegment: 参谋
+   DEBUG: 2026-07-10 22:51:46,849:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,849:      pdf_renderer.py:  470: printSegment: | 维度 | Dex/Clay/脉客 | Yenesow/Keep | social-agent v4.0 |
+   DEBUG: 2026-07-10 22:51:46,850:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,850:      pdf_renderer.py:  470: printSegment: |:----|:----|:----|:----|
+   DEBUG: 2026-07-10 22:51:46,850:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,851:      pdf_renderer.py:  470: printSegment: | 建议类型 | 
+   DEBUG: 2026-07-10 22:51:46,851:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,851:      pdf_renderer.py:  470: printSegment: 该联系了
+   DEBUG: 2026-07-10 22:51:46,852:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,852:      pdf_renderer.py:  470: printSegment: （提醒） | 
+   DEBUG: 2026-07-10 22:51:46,853:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,853:      pdf_renderer.py:  470: printSegment: 可以聊这个
+   DEBUG: 2026-07-10 22:51:46,853:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,854:      pdf_renderer.py:  470: printSegment: （开场白） | 
+   DEBUG: 2026-07-10 22:51:46,854:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,854:      pdf_renderer.py:  470: printSegment: 联系谁 + 为什么 + 聊什么
+   DEBUG: 2026-07-10 22:51:46,855:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,855:      pdf_renderer.py:  470: printSegment: 三元组
+   DEBUG: 2026-07-10 22:51:46,855:      pdf_renderer.py:  470: printSegment:  |
+   DEBUG: 2026-07-10 22:51:46,856:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,856:      pdf_renderer.py:  470: printSegment: | 建议依据 | 时间间隔 | AI 生成 | 
+   DEBUG: 2026-07-10 22:51:46,857:      pdf_renderer.py:  470: printSegment: 五信号源打分 +
+   DEBUG: 2026-07-10 22:51:46,857:      pdf_renderer.py:  470: printSegment: leverage 锚定
+   DEBUG: 2026-07-10 22:51:46,857:      pdf_renderer.py:  470: printSegment:  |
+   DEBUG: 2026-07-10 22:51:46,858:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,858:      pdf_renderer.py:  470: printSegment: | 建议深度 | 
+   DEBUG: 2026-07-10 22:51:46,858:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,859:      pdf_renderer.py:  470: printSegment: 3个月没联系
+   DEBUG: 2026-07-10 22:51:46,859:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,859:      pdf_renderer.py:  470: printSegment:  | 
+   DEBUG: 2026-07-10 22:51:46,860:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,860:      pdf_renderer.py:  470: printSegment: 他儿子要高考了
+   DEBUG: 2026-07-10 22:51:46,860:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,861:      pdf_renderer.py:  470: printSegment:  | 
+   DEBUG: 2026-07-10 22:51:46,861:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,862:      pdf_renderer.py:  470: printSegment: 锚定
+   DEBUG: 2026-07-10 22:51:46,862:      pdf_renderer.py:  470: printSegment: [
+   DEBUG: 2026-07-10 22:51:46,862:      pdf_renderer.py:  470: printSegment: 事业/AI能力
+   DEBUG: 2026-07-10 22:51:46,863:      pdf_renderer.py:  470: printSegment: ]
+   DEBUG: 2026-07-10 22:51:46,863:      pdf_renderer.py:  470: printSegment:  → 以AI审计方案请教
+   DEBUG: 2026-07-10 22:51:46,863:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,864:      pdf_renderer.py:  470: printSegment:  |
+   DEBUG: 2026-07-10 22:51:46,864:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,864:      pdf_renderer.py:  470: printSegment: | 建议数量 | 全量提醒 | 不限 | 
+   DEBUG: 2026-07-10 22:51:46,865:      pdf_renderer.py:  470: printSegment: 每周 3-5 条封顶（聚焦）
+   DEBUG: 2026-07-10 22:51:46,865:      pdf_renderer.py:  470: printSegment:  |
+   DEBUG: 2026-07-10 22:51:46,866:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,866:      pdf_renderer.py:  470: printSegment: | 建议后衔接 | 无 | 无 | 
+   DEBUG: 2026-07-10 22:51:46,866:      pdf_renderer.py:  470: printSegment: 附 
+   DEBUG: 2026-07-10 22:51:46,867:      pdf_renderer.py:  470: printSegment: social draft
+   DEBUG: 2026-07-10 22:51:46,868:      pdf_renderer.py:  470: printSegment:  命令，一键拟稿
+   DEBUG: 2026-07-10 22:51:46,869:      pdf_renderer.py:  470: printSegment:  |
+   DEBUG: 2026-07-10 22:51:46,869:      pdf_renderer.py:  470: printSegment: 关键差异
+   DEBUG: 2026-07-10 22:51:46,870:      pdf_renderer.py:  470: printSegment: ：竞品的
+   DEBUG: 2026-07-10 22:51:46,870:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,870:      pdf_renderer.py:  470: printSegment: 建议
+   DEBUG: 2026-07-10 22:51:46,871:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,871:      pdf_renderer.py:  470: printSegment: 本质是
+   DEBUG: 2026-07-10 22:51:46,872:      pdf_renderer.py:  470: printSegment: 提醒
+   DEBUG: 2026-07-10 22:51:46,872:      pdf_renderer.py:  470: printSegment: （reminder），social-agent 的
+   DEBUG: 2026-07-10 22:51:46,872:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,873:      pdf_renderer.py:  470: printSegment: 建议
+   DEBUG: 2026-07-10 22:51:46,873:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,874:      pdf_renderer.py:  470: printSegment: 本质是
+   DEBUG: 2026-07-10 22:51:46,874:      pdf_renderer.py:  470: printSegment: 策略建议
+   DEBUG: 2026-07-10 22:51:46,874:      pdf_renderer.py:  470: printSegment: （advise）。提醒说
+   DEBUG: 2026-07-10 22:51:46,875:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,875:      pdf_renderer.py:  470: printSegment: 该做了
+   DEBUG: 2026-07-10 22:51:46,876:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,876:      pdf_renderer.py:  470: printSegment: ，策略说
+   DEBUG: 2026-07-10 22:51:46,876:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,877:      pdf_renderer.py:  470: printSegment: 该做什么 + 为什么 + 怎么做
+   DEBUG: 2026-07-10 22:51:46,877:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,878:      pdf_renderer.py:  470: printSegment: 。
+   DEBUG: 2026-07-10 22:51:46,878:      pdf_renderer.py:  470: printSegment: 差异 4：兑现追踪——从
+   DEBUG: 2026-07-10 22:51:46,878:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,879:      pdf_renderer.py:  470: printSegment: 记录
+   DEBUG: 2026-07-10 22:51:46,879:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,880:      pdf_renderer.py:  470: printSegment: 到
+   DEBUG: 2026-07-10 22:51:46,880:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,880:      pdf_renderer.py:  470: printSegment: 闭环
+   DEBUG: 2026-07-10 22:51:46,881:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,881:      pdf_renderer.py:  470: printSegment: | 维度 | 所有竞品 | social-agent v4.0 |
+   DEBUG: 2026-07-10 22:51:46,882:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,882:      pdf_renderer.py:  470: printSegment: |:----|:----|:----|
+   DEBUG: 2026-07-10 22:51:46,883:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,883:      pdf_renderer.py:  470: printSegment: | 记录什么 | 互动记录（聊了什么） | 互动记录 + 
+   DEBUG: 2026-07-10 22:51:46,883:      pdf_renderer.py:  470: printSegment: 兑现成果（outcome）
+   DEBUG: 2026-07-10 22:51:46,884:      pdf_renderer.py:  470: printSegment:  |
+   DEBUG: 2026-07-10 22:51:46,884:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,885:      pdf_renderer.py:  470: printSegment: | 回顾维度 | 
+   DEBUG: 2026-07-10 22:51:46,885:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,886:      pdf_renderer.py:  470: printSegment: 上次联系是什么时候
+   DEBUG: 2026-07-10 22:51:46,886:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,886:      pdf_renderer.py:  470: printSegment:  | 
+   DEBUG: 2026-07-10 22:51:46,887:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,887:      pdf_renderer.py:  470: printSegment: 这半年在人脉上投入的时间换来了什么
+   DEBUG: 2026-07-10 22:51:46,888:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,888:      pdf_renderer.py:  470: printSegment:  |
+   DEBUG: 2026-07-10 22:51:46,889:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,889:      pdf_renderer.py:  470: printSegment: | ROI | 无 | 
+   DEBUG: 2026-07-10 22:51:46,889:      pdf_renderer.py:  470: printSegment: 明确不做 ROI 计算（原则七），只做可追溯记录
+   DEBUG: 2026-07-10 22:51:46,890:      pdf_renderer.py:  470: printSegment:  |
+   DEBUG: 2026-07-10 22:51:46,890:      pdf_renderer.py:  470: printSegment: 这是所有竞品完全没有的维度。
+   DEBUG: 2026-07-10 22:51:46,891:      pdf_renderer.py:  470: printSegment:  没有产品回答
+   DEBUG: 2026-07-10 22:51:46,891:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,892:      pdf_renderer.py:  470: printSegment: 我经营人脉的回报是什么
+   DEBUG: 2026-07-10 22:51:46,892:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,892:      pdf_renderer.py:  470: printSegment: 。Monica 记录
+   DEBUG: 2026-07-10 22:51:46,893:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,893:      pdf_renderer.py:  470: printSegment: 活动
+   DEBUG: 2026-07-10 22:51:46,894:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,894:      pdf_renderer.py:  470: printSegment: ，Dex 记录
+   DEBUG: 2026-07-10 22:51:46,894:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,895:      pdf_renderer.py:  470: printSegment: 互动
+   DEBUG: 2026-07-10 22:51:46,895:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,896:      pdf_renderer.py:  470: printSegment: ，但没人记录
+   DEBUG: 2026-07-10 22:51:46,896:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,897:      pdf_renderer.py:  470: printSegment: 这次互动产出了什么成果
+   DEBUG: 2026-07-10 22:51:46,897:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,897:      pdf_renderer.py:  470: printSegment: 。
+   DEBUG: 2026-07-10 22:51:46,898:      pdf_renderer.py:  470: printSegment: 差异 5：本地优先 + CLI 原生——从
+   DEBUG: 2026-07-10 22:51:46,898:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,899:      pdf_renderer.py:  470: printSegment: 云端 SaaS
+   DEBUG: 2026-07-10 22:51:46,899:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,900:      pdf_renderer.py:  470: printSegment: 到
+   DEBUG: 2026-07-10 22:51:46,900:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,901:      pdf_renderer.py:  470: printSegment: 数据主权
+   DEBUG: 2026-07-10 22:51:46,901:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:46,902:      pdf_renderer.py:  470: printSegment: | 维度 | Clay/Dex/脉客 | Monica | social-agent |
+   DEBUG: 2026-07-10 22:51:46,902:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,903:      pdf_renderer.py:  470: printSegment: |:----|:----|:----|:----|
+   DEBUG: 2026-07-10 22:51:46,903:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,903:      pdf_renderer.py:  470: printSegment: | 数据存储 | 云端（加密） | 云端或自托管 | 
+   DEBUG: 2026-07-10 22:51:46,904:      pdf_renderer.py:  470: printSegment: 本地 JSON，不上云
+   DEBUG: 2026-07-10 22:51:46,904:      pdf_renderer.py:  470: printSegment:  |
+   DEBUG: 2026-07-10 22:51:46,905:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,905:      pdf_renderer.py:  470: printSegment: | 数据主权 | 平台持有 | 用户持有（可自托管） | 
+   DEBUG: 2026-07-10 22:51:46,906:      pdf_renderer.py:  470: printSegment: 用户完全持有
+   DEBUG: 2026-07-10 22:51:46,906:      pdf_renderer.py:  470: printSegment:  |
+   DEBUG: 2026-07-10 22:51:46,907:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,907:      pdf_renderer.py:  470: printSegment: | 界面 | GUI（App/Web） | Web | 
+   DEBUG: 2026-07-10 22:51:46,908:      pdf_renderer.py:  470: printSegment: CLI 优先
+   DEBUG: 2026-07-10 22:51:46,908:      pdf_renderer.py:  470: printSegment:  |
+   DEBUG: 2026-07-10 22:51:46,909:      pdf_renderer.py:  470: printSegment: | 集成 | 邮件/日历/LinkedIn API | 无 | 
+   DEBUG: 2026-07-10 22:51:46,909:      pdf_renderer.py:  470: printSegment: 微信推送（可选）+ LLM 抽象层
+   DEBUG: 2026-07-10 22:51:46,910:      pdf_renderer.py:  470: printSegment:  |
+   DEBUG: 2026-07-10 22:51:46,910:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:46,911:      pdf_renderer.py:  470: printSegment: | 定价 | $120-144/年 | $90/年或免费 | 
+   DEBUG: 2026-07-10 22:51:46,911:      pdf_renderer.py:  470: printSegment: 开源免费
+   DEBUG: 2026-07-10 22:51:46,912:      pdf_renderer.py:  470: printSegment:  |
+   DEBUG: 2026-07-10 22:51:46,912:      pdf_renderer.py:  470: printSegment: 关键差异
+   DEBUG: 2026-07-10 22:51:46,913:      pdf_renderer.py:  470: printSegment: ：social-agent 是
+   DEBUG: 2026-07-10 22:51:46,913:      pdf_renderer.py:  470: printSegment: 中国语境下的本地优先工具
+   DEBUG: 2026-07-10 22:51:46,914:      pdf_renderer.py:  470: printSegment: 。Clay/Dex 依赖 Gmail + LinkedIn 生态，在中国不可用（LinkedIn 已退出中国，Gmail 不普及）。social-agent 的微信推送 + 本地存储 + CLI 是唯一适配中国社交生态（微信主导）的方案。
+   DEBUG: 2026-07-10 22:51:46,915:      pdf_renderer.py:  470: printSegment: 三、定位矩阵
+   DEBUG: 2026-07-10 22:51:46,915:      pdf_renderer.py:  470: printSegment:                     关系深度管理
+   DEBUG: 2026-07-10 22:51:46,941:      pdf_renderer.py:  470: printSegment:                          ↑
+   DEBUG: 2026-07-10 22:51:46,941:      pdf_renderer.py:  470: printSegment:                          |
+   DEBUG: 2026-07-10 22:51:46,942:      pdf_renderer.py:  470: printSegment:           Monica/Norrie  |  social-agent v4.0
+   DEBUG: 2026-07-10 22:51:46,943:      pdf_renderer.py:  470: printSegment:           (手动记录生活)  |  (目标锚定+建议引擎+兑现追踪)
+   DEBUG: 2026-07-10 22:51:46,973:      pdf_renderer.py:  470: printSegment:                          |
+   DEBUG: 2026-07-10 22:51:46,974:      pdf_renderer.py:  470: printSegment:   互动频率 ──────────────┼────────────── 目标对齐
+   DEBUG: 2026-07-10 22:51:47,006:      pdf_renderer.py:  470: printSegment:                          |
+   DEBUG: 2026-07-10 22:51:47,006:      pdf_renderer.py:  470: printSegment:           Dex/脉客       |  (空缺)
+   DEBUG: 2026-07-10 22:51:47,007:      pdf_renderer.py:  470: printSegment:           (节奏提醒)      |
+   DEBUG: 2026-07-10 22:51:47,008:      pdf_renderer.py:  470: printSegment:                          |
+   DEBUG: 2026-07-10 22:51:47,008:      pdf_renderer.py:  470: printSegment:           Clay           |  (空缺)
+   DEBUG: 2026-07-10 22:51:47,009:      pdf_renderer.py:  470: printSegment:           (自动enrichment)|
+   DEBUG: 2026-07-10 22:51:47,009:      pdf_renderer.py:  470: printSegment:                          ↓
+   DEBUG: 2026-07-10 22:51:47,010:      pdf_renderer.py:  470: printSegment:                     信息聚合管理
+   DEBUG: 2026-07-10 22:51:47,010:      pdf_renderer.py:  470: printSegment: social-agent 独占
+   DEBUG: 2026-07-10 22:51:47,011:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,011:      pdf_renderer.py:  470: printSegment: 目标对齐 × 关系深度管理
+   DEBUG: 2026-07-10 22:51:47,012:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,012:      pdf_renderer.py:  470: printSegment: 象限。
+   DEBUG: 2026-07-10 22:51:47,013:      pdf_renderer.py:  470: printSegment:  没有任何竞品同时做到：
+   DEBUG: 2026-07-10 22:51:47,013:      pdf_renderer.py:  470: printSegment:  1 
+   DEBUG: 2026-07-10 22:51:47,014:      pdf_renderer.py:  470: printSegment: 以用户目标为锚点定义关系价值
+   DEBUG: 2026-07-10 22:51:47,014:      pdf_renderer.py:  470: printSegment:  2 
+   DEBUG: 2026-07-10 22:51:47,015:      pdf_renderer.py:  470: printSegment: 以策略建议（非提醒）驱动经营行动
+   DEBUG: 2026-07-10 22:51:47,015:      pdf_renderer.py:  470: printSegment:  3 
+   DEBUG: 2026-07-10 22:51:47,015:      pdf_renderer.py:  470: printSegment: 以兑现追踪闭合
+   DEBUG: 2026-07-10 22:51:47,015:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,016:      pdf_renderer.py:  470: printSegment: 想 → 做 → 得
+   DEBUG: 2026-07-10 22:51:47,016:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,016:      pdf_renderer.py:  470: printSegment: 循环
+   DEBUG: 2026-07-10 22:51:47,016:      pdf_renderer.py:  470: printSegment: 四、痛点诊断：三层痛点
+   DEBUG: 2026-07-10 22:51:47,017:      pdf_renderer.py:  470: printSegment: 第一层：现有产品共同痛点（赛道级）
+   DEBUG: 2026-07-10 22:51:47,017:      pdf_renderer.py:  470: printSegment: | 痛点 | 证据 | 谁解决了 |
+   DEBUG: 2026-07-10 22:51:47,017:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,018:      pdf_renderer.py:  470: printSegment: |:----|:----|:----|
+   DEBUG: 2026-07-10 22:51:47,018:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,018:      pdf_renderer.py:  470: printSegment: | 
+   DEBUG: 2026-07-10 22:51:47,019:      pdf_renderer.py:  470: printSegment: 数据录入摩擦
+   DEBUG: 2026-07-10 22:51:47,019:      pdf_renderer.py:  470: printSegment:  | 范凯：
+   DEBUG: 2026-07-10 22:51:47,019:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,019:      pdf_renderer.py:  470: printSegment: Excel 填完半年就不更新了
+   DEBUG: 2026-07-10 22:51:47,020:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,020:      pdf_renderer.py:  470: printSegment: ；Zoho：64% 用户
+   DEBUG: 2026-07-10 22:51:47,020:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,021:      pdf_renderer.py:  470: printSegment: 用着用着就弃了
+   DEBUG: 2026-07-10 22:51:47,021:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,021:      pdf_renderer.py:  470: printSegment:  | Clay 自动同步（但依赖 Gmail/LinkedIn，中国不可用）；Keep 语音（但仅 iOS） |
+   DEBUG: 2026-07-10 22:51:47,022:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,022:      pdf_renderer.py:  470: printSegment: | 
+   DEBUG: 2026-07-10 22:51:47,022:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,022:      pdf_renderer.py:  470: printSegment: 该联系谁
+   DEBUG: 2026-07-10 22:51:47,023:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,023:      pdf_renderer.py:  470: printSegment: 无策略
+   DEBUG: 2026-07-10 22:51:47,023:      pdf_renderer.py:  470: printSegment:  | 全部产品只做
+   DEBUG: 2026-07-10 22:51:47,023:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,024:      pdf_renderer.py:  470: printSegment: 时间到了
+   DEBUG: 2026-07-10 22:51:47,024:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,024:      pdf_renderer.py:  470: printSegment: 提醒，不做
+   DEBUG: 2026-07-10 22:51:47,025:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,025:      pdf_renderer.py:  470: printSegment: 为什么该联系
+   DEBUG: 2026-07-10 22:51:47,025:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,025:      pdf_renderer.py:  470: printSegment:  | 
+   DEBUG: 2026-07-10 22:51:47,026:      pdf_renderer.py:  470: printSegment: 无人解决
+   DEBUG: 2026-07-10 22:51:47,026:      pdf_renderer.py:  470: printSegment:  |
+   DEBUG: 2026-07-10 22:51:47,026:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,027:      pdf_renderer.py:  470: printSegment: | 
+   DEBUG: 2026-07-10 22:51:47,027:      pdf_renderer.py:  470: printSegment: 关系强度无标准
+   DEBUG: 2026-07-10 22:51:47,027:      pdf_renderer.py:  470: printSegment:  | Clay
+   DEBUG: 2026-07-10 22:51:47,028:      pdf_renderer.py:  470: printSegment: 按频率自动算，Dex 手动标，Monica 无 | 
+   DEBUG: 2026-07-10 22:51:47,028:      pdf_renderer.py:  470: printSegment: 无人解决
+   DEBUG: 2026-07-10 22:51:47,028:      pdf_renderer.py:  470: printSegment: ——social-agent 的社交价值理论是唯一显式框架 |
+   DEBUG: 2026-07-10 22:51:47,029:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,029:      pdf_renderer.py:  470: printSegment: | 
+   DEBUG: 2026-07-10 22:51:47,029:      pdf_renderer.py:  470: printSegment: 无目标对齐
+   DEBUG: 2026-07-10 22:51:47,030:      pdf_renderer.py:  470: printSegment:  | 没有产品问
+   DEBUG: 2026-07-10 22:51:47,030:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,030:      pdf_renderer.py:  470: printSegment: 你的人脉服务于什么目标
+   DEBUG: 2026-07-10 22:51:47,030:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,031:      pdf_renderer.py:  470: printSegment:  | 
+   DEBUG: 2026-07-10 22:51:47,031:      pdf_renderer.py:  470: printSegment: 无人解决
+   DEBUG: 2026-07-10 22:51:47,031:      pdf_renderer.py:  470: printSegment: ——social-agent v4.0 leverage 是独创 |
+   DEBUG: 2026-07-10 22:51:47,032:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,032:      pdf_renderer.py:  470: printSegment: | 
+   DEBUG: 2026-07-10 22:51:47,032:      pdf_renderer.py:  470: printSegment: 无兑现闭环
+   DEBUG: 2026-07-10 22:51:47,033:      pdf_renderer.py:  470: printSegment:  | 没有产品追踪
+   DEBUG: 2026-07-10 22:51:47,033:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,033:      pdf_renderer.py:  470: printSegment: 人脉投入产出什么
+   DEBUG: 2026-07-10 22:51:47,033:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,034:      pdf_renderer.py:  470: printSegment:  | 
+   DEBUG: 2026-07-10 22:51:47,034:      pdf_renderer.py:  470: printSegment: 无人解决
+   DEBUG: 2026-07-10 22:51:47,034:      pdf_renderer.py:  470: printSegment: ——social-agent v4.0 outcome 是独创 |
+   DEBUG: 2026-07-10 22:51:47,035:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,035:      pdf_renderer.py:  470: printSegment: | 
+   DEBUG: 2026-07-10 22:51:47,035:      pdf_renderer.py:  470: printSegment: 中国生态缺失
+   DEBUG: 2026-07-10 22:51:47,036:      pdf_renderer.py:  470: printSegment:  |
+   DEBUG: 2026-07-10 22:51:47,036:      pdf_renderer.py:  470: printSegment: Clay/Dex 依赖 Gmail + LinkedIn，中国用户用微信 | 
+   DEBUG: 2026-07-10 22:51:47,037:      pdf_renderer.py:  470: printSegment: 无人解决
+   DEBUG: 2026-07-10 22:51:47,037:      pdf_renderer.py:  470: printSegment: ——social-agent 微信推送是唯一适配 |
+   DEBUG: 2026-07-10 22:51:47,037:      pdf_renderer.py:  470: printSegment: 第二层：social-agent 独有痛点（自身诊断）
+   DEBUG: 2026-07-10 22:51:47,038:      pdf_renderer.py:  470: printSegment: | 痛点 | 数据证据 | 根因 |
+   DEBUG: 2026-07-10 22:51:47,038:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,038:      pdf_renderer.py:  470: printSegment: |:----|:----|:----|
+   DEBUG: 2026-07-10 22:51:47,039:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,039:      pdf_renderer.py:  470: printSegment: | 
+   DEBUG: 2026-07-10 22:51:47,039:      pdf_renderer.py:  470: printSegment: timeline 真空
+   DEBUG: 2026-07-10 22:51:47,040:      pdf_renderer.py:  470: printSegment:  | 核心圈 317 人中 99% 从未在 timeline 出现，32 条/4个月 | 手动记录摩擦仍太高（比竞品好但不够好）；import-chat/calls 被冻结 |
+   DEBUG: 2026-07-10 22:51:47,040:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,041:      pdf_renderer.py:  470: printSegment: | 
+   DEBUG: 2026-07-10 22:51:47,041:      pdf_renderer.py:  470: printSegment: 锚定 ≠ 经营
+   DEBUG: 2026-07-10 22:51:47,041:      pdf_renderer.py:  470: printSegment:  | 31 人已锚定但 30 人零 timeline 互动记录 | 锚定是
+   DEBUG: 2026-07-10 22:51:47,042:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,042:      pdf_renderer.py:  470: printSegment: 想清楚
+   DEBUG: 2026-07-10 22:51:47,042:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,043:      pdf_renderer.py:  470: printSegment: ，但没解决
+   DEBUG: 2026-07-10 22:51:47,043:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,043:      pdf_renderer.py:  470: printSegment: 动起来
+   DEBUG: 2026-07-10 22:51:47,044:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,044:      pdf_renderer.py:  470: printSegment: ；advise 对零 timeline 的人只能空猜
+   DEBUG: 2026-07-10 22:51:47,044:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,045:      pdf_renderer.py:  470: printSegment: 聊什么
+   DEBUG: 2026-07-10 22:51:47,045:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,045:      pdf_renderer.py:  470: printSegment:  |
+   DEBUG: 2026-07-10 22:51:47,046:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,046:      pdf_renderer.py:  470: printSegment: | 
+   DEBUG: 2026-07-10 22:51:47,046:      pdf_renderer.py:  470: printSegment: outcome 空转
+   DEBUG: 2026-07-10 22:51:47,047:      pdf_renderer.py:  470: printSegment:  | 0 条 outcome 记录 | 兑现追踪是 v4.0 最超前的设计，但用户还没有
+   DEBUG: 2026-07-10 22:51:47,047:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,047:      pdf_renderer.py:  470: printSegment: 记录成果
+   DEBUG: 2026-07-10 22:51:47,048:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,048:      pdf_renderer.py:  470: printSegment: 的习惯 |
+   DEBUG: 2026-07-10 22:51:47,048:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,049:      pdf_renderer.py:  470: printSegment: | 
+   DEBUG: 2026-07-10 22:51:47,049:      pdf_renderer.py:  470: printSegment: CLI 摩擦
+   DEBUG: 2026-07-10 22:51:47,050:      pdf_renderer.py:  470: printSegment:  | 每次记录要打开终端输入命令 | 相比 Clay 的
+   DEBUG: 2026-07-10 22:51:47,050:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,050:      pdf_renderer.py:  470: printSegment: 邮件自动同步
+   DEBUG: 2026-07-10 22:51:47,051:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,051:      pdf_renderer.py:  470: printSegment: 或 Keep 的
+   DEBUG: 2026-07-10 22:51:47,051:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,052:      pdf_renderer.py:  470: printSegment: 说10秒
+   DEBUG: 2026-07-10 22:51:47,052:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,052:      pdf_renderer.py:  470: printSegment: ，CLI 是逆向选择 |
+   DEBUG: 2026-07-10 22:51:47,053:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,053:      pdf_renderer.py:  470: printSegment: | 
+   DEBUG: 2026-07-10 22:51:47,053:      pdf_renderer.py:  470: printSegment: 4366 reserve 联系人沉睡
+   DEBUG: 2026-07-10 22:51:47,054:      pdf_renderer.py:  470: printSegment:  |
+   DEBUG: 2026-07-10 22:51:47,055:      pdf_renderer.py:  470: printSegment: reserve 层 4366 人，enrich 仅 3 人 | 批量 enrich 路线被证伪（一个月仅 3/4683），晋升触发式尚未跑通 |
+   DEBUG: 2026-07-10 22:51:47,055:      pdf_renderer.py:  470: printSegment: 第三层：用户（陈颖芳）特有痛点
+   DEBUG: 2026-07-10 22:51:47,055:      pdf_renderer.py:  470: printSegment: | 痛点 | 证据 |
+   DEBUG: 2026-07-10 22:51:47,056:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,056:      pdf_renderer.py:  470: printSegment: |:----|:----|
+   DEBUG: 2026-07-10 22:51:47,056:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,057:      pdf_renderer.py:  470: printSegment: | 
+   DEBUG: 2026-07-10 22:51:47,057:      pdf_renderer.py:  470: printSegment: 邮储体系内关系经营无工具
+   DEBUG: 2026-07-10 22:51:47,058:      pdf_renderer.py:  470: printSegment:  | 8 个强度5 的上级领导 + 10+ 总行/分行高管，没有工具帮
+   DEBUG: 2026-07-10 22:51:47,058:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,058:      pdf_renderer.py:  470: printSegment: 想清楚怎么经营上级
+   DEBUG: 2026-07-10 22:51:47,059:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,059:      pdf_renderer.py:  470: printSegment:  |
+   DEBUG: 2026-07-10 22:51:47,059:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,060:      pdf_renderer.py:  470: printSegment: | 
+   DEBUG: 2026-07-10 22:51:47,060:      pdf_renderer.py:  470: printSegment: 跨界身份整合难
+   DEBUG: 2026-07-10 22:51:47,061:      pdf_renderer.py:  470: printSegment:  | 邮储 + 科大校友 + 民建 + 创业四个圈层交叉，竞品无法处理多维角色 |
+   DEBUG: 2026-07-10 22:51:47,061:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,061:      pdf_renderer.py:  470: printSegment: | 
+   DEBUG: 2026-07-10 22:51:47,062:      pdf_renderer.py:  470: printSegment: 投资 + 事业双重目标
+   DEBUG: 2026-07-10 22:51:47,062:      pdf_renderer.py:  470: printSegment:  | leverage 中投资维度仅 2 人锚定，但实际有昆仑万维重仓等投资决策需要人脉支撑 |
+   DEBUG: 2026-07-10 22:51:47,063:      pdf_renderer.py:  470: printSegment: 五、功能矩阵对比
+   DEBUG: 2026-07-10 22:51:47,063:      pdf_renderer.py:  470: printSegment: 5.1 核心功能对比
+   DEBUG: 2026-07-10 22:51:47,064:      pdf_renderer.py:  470: printSegment: | 功能 | Clay | Dex | Monica | 脉客 | Keep | Yenesow | 
+   DEBUG: 2026-07-10 22:51:47,064:      pdf_renderer.py:  470: printSegment: social-agent
+   DEBUG: 2026-07-10 22:51:47,064:      pdf_renderer.py:  470: printSegment:  |
+   DEBUG: 2026-07-10 22:51:47,065:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,065:      pdf_renderer.py:  470: printSegment: |:----|:---:|:---:|:------:|:----:|:----:|:-------:|:----------------:|
+   DEBUG: 2026-07-10 22:51:47,066:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,066:      pdf_renderer.py:  470: printSegment: | 自动联系人导入 |
+   DEBUG: 2026-07-10 22:51:47,067:      pdf_renderer.py:  470: printSegment: ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ❌（手动/OCR） |
+   DEBUG: 2026-07-10 22:51:47,067:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,068:      pdf_renderer.py:  470: printSegment: | 自动 enrichment | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅（晋升触发式） |
+   DEBUG: 2026-07-10 22:51:47,068:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,069:      pdf_renderer.py:  470: printSegment: | 互动记录 | ✅自动 | ✅半自动 | ✅手动 | ✅手动 | ✅语音 | ✅手动 | ✅手动 |
+   DEBUG: 2026-07-10 22:51:47,069:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,069:      pdf_renderer.py:  470: printSegment: | 冷却提醒 | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ |
+   DEBUG: 2026-07-10 22:51:47,070:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,070:      pdf_renderer.py:  470: printSegment: | 生日提醒 | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+   DEBUG: 2026-07-10 22:51:47,071:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,071:      pdf_renderer.py:  470: printSegment: | 
+   DEBUG: 2026-07-10 22:51:47,071:      pdf_renderer.py:  470: printSegment: 目标锚定
+   DEBUG: 2026-07-10 22:51:47,072:      pdf_renderer.py:  470: printSegment:  | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | 
+   DEBUG: 2026-07-10 22:51:47,072:      pdf_renderer.py:  470: printSegment: ✅（独创）
+   DEBUG: 2026-07-10 22:51:47,072:      pdf_renderer.py:  470: printSegment:  |
+   DEBUG: 2026-07-10 22:51:47,073:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,073:      pdf_renderer.py:  470: printSegment: | 
+   DEBUG: 2026-07-10 22:51:47,074:      pdf_renderer.py:  470: printSegment: 策略建议三元组
+   DEBUG: 2026-07-10 22:51:47,074:      pdf_renderer.py:  470: printSegment:  | ❌ | ❌ | ❌ | ❌ | ❌ | △开场白 | 
+   DEBUG: 2026-07-10 22:51:47,074:      pdf_renderer.py:  470: printSegment: ✅（独创）
+   DEBUG: 2026-07-10 22:51:47,075:      pdf_renderer.py:  470: printSegment:  |
+   DEBUG: 2026-07-10 22:51:47,075:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,076:      pdf_renderer.py:  470: printSegment: | 
+   DEBUG: 2026-07-10 22:51:47,076:      pdf_renderer.py:  470: printSegment: 兑现追踪
+   DEBUG: 2026-07-10 22:51:47,076:      pdf_renderer.py:  470: printSegment: outcome
+   DEBUG: 2026-07-10 22:51:47,078:      pdf_renderer.py:  470: printSegment:  | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | 
+   DEBUG: 2026-07-10 22:51:47,078:      pdf_renderer.py:  470: printSegment: ✅（独创）
+   DEBUG: 2026-07-10 22:51:47,082:      pdf_renderer.py:  470: printSegment:  |
+   DEBUG: 2026-07-10 22:51:47,083:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,083:      pdf_renderer.py:  470: printSegment: | 关系强度评分 | ✅频率 | ✅手动 | ❌ | ❌ | ❌ | ✅AI | 
+   DEBUG: 2026-07-10 22:51:47,084:      pdf_renderer.py:  470: printSegment: ✅社交价值
+   DEBUG: 2026-07-10 22:51:47,084:      pdf_renderer.py:  470: printSegment:  |
+   DEBUG: 2026-07-10 22:51:47,084:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,085:      pdf_renderer.py:  470: printSegment: | 关系图谱 | ❌ | ✅ | ✅ | ❌ | ❌ | ✅ | ❌（冻结） |
+   DEBUG: 2026-07-10 22:51:47,085:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,086:      pdf_renderer.py:  470: printSegment: | 群聊感知 | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌（冻结） |
+   DEBUG: 2026-07-10 22:51:47,086:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,087:      pdf_renderer.py:  470: printSegment: | AI 拟稿 | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | 
+   DEBUG: 2026-07-10 22:51:47,087:      pdf_renderer.py:  470: printSegment: ✅
+   DEBUG: 2026-07-10 22:51:47,087:      pdf_renderer.py:  470: printSegment:  |
+   DEBUG: 2026-07-10 22:51:47,088:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,088:      pdf_renderer.py:  470: printSegment: | 微信推送 | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | 
+   DEBUG: 2026-07-10 22:51:47,089:      pdf_renderer.py:  470: printSegment: ✅
+   DEBUG: 2026-07-10 22:51:47,089:      pdf_renderer.py:  470: printSegment:  |
+   DEBUG: 2026-07-10 22:51:47,089:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,090:      pdf_renderer.py:  470: printSegment: | 本地数据主权 | ❌ | ❌ | ✅自托管 | ❌ | ❌ | ❌ | 
+   DEBUG: 2026-07-10 22:51:47,090:      pdf_renderer.py:  470: printSegment: ✅
+   DEBUG: 2026-07-10 22:51:47,091:      pdf_renderer.py:  470: printSegment:  |
+   DEBUG: 2026-07-10 22:51:47,091:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,092:      pdf_renderer.py:  470: printSegment: | 开源 | ❌ | ❌ | ✅ | ❌ |
+   DEBUG: 2026-07-10 22:51:47,092:      pdf_renderer.py:  470: printSegment: ❌ | ❌ | 
+   DEBUG: 2026-07-10 22:51:47,092:      pdf_renderer.py:  470: printSegment: ✅
+   DEBUG: 2026-07-10 22:51:47,093:      pdf_renderer.py:  470: printSegment:  |
+   DEBUG: 2026-07-10 22:51:47,093:      pdf_renderer.py:  470: printSegment: 5.2 独有功能详表
+   DEBUG: 2026-07-10 22:51:47,094:      pdf_renderer.py:  470: printSegment: | # | 功能 | 竞品中最接近的 | social-agent 的本质差异 |
+   DEBUG: 2026-07-10 22:51:47,094:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,095:      pdf_renderer.py:  470: printSegment: |:-:|:----|:----|:----|
+   DEBUG: 2026-07-10 22:51:47,095:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,095:      pdf_renderer.py:  470: printSegment: | 1 | 
+   DEBUG: 2026-07-10 22:51:47,096:      pdf_renderer.py:  470: printSegment: leverage 锚定
+   DEBUG: 2026-07-10 22:51:47,096:      pdf_renderer.py:  470: printSegment:  | 钛合金人脉的 5+50+100 分层 | 分层只做
+   DEBUG: 2026-07-10 22:51:47,097:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,097:      pdf_renderer.py:  470: printSegment: 谁重要
+   DEBUG: 2026-07-10 22:51:47,098:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,098:      pdf_renderer.py:  470: printSegment: ，leverage 做
+   DEBUG: 2026-07-10 22:51:47,098:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,099:      pdf_renderer.py:  470: printSegment: 为什么重要 + 怎么经营
+   DEBUG: 2026-07-10 22:51:47,099:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,100:      pdf_renderer.py:  470: printSegment:  |
+   DEBUG: 2026-07-10 22:51:47,100:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,100:      pdf_renderer.py:  470: printSegment: | 2 | 
+   DEBUG: 2026-07-10 22:51:47,101:      pdf_renderer.py:  470: printSegment: advise 三元组
+   DEBUG: 2026-07-10 22:51:47,101:      pdf_renderer.py:  470: printSegment:  | Yenesow
+   DEBUG: 2026-07-10 22:51:47,102:      pdf_renderer.py:  470: printSegment: 的对话开场白 | 开场白只解决
+   DEBUG: 2026-07-10 22:51:47,102:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,103:      pdf_renderer.py:  470: printSegment: 聊什么
+   DEBUG: 2026-07-10 22:51:47,103:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,104:      pdf_renderer.py:  470: printSegment: ，三元组解决
+   DEBUG: 2026-07-10 22:51:47,104:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,104:      pdf_renderer.py:  470: printSegment: 联系谁 + 为什么 + 聊什么
+   DEBUG: 2026-07-10 22:51:47,105:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,105:      pdf_renderer.py:  470: printSegment:  |
+   DEBUG: 2026-07-10 22:51:47,106:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,106:      pdf_renderer.py:  470: printSegment: | 3 | 
+   DEBUG: 2026-07-10 22:51:47,107:      pdf_renderer.py:  470: printSegment: outcome 追踪
+   DEBUG: 2026-07-10 22:51:47,107:      pdf_renderer.py:  470: printSegment:  | 无 | 所有竞品只记录
+   DEBUG: 2026-07-10 22:51:47,107:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,108:      pdf_renderer.py:  470: printSegment: 投入
+   DEBUG: 2026-07-10 22:51:47,108:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,109:      pdf_renderer.py:  470: printSegment: （互动），不记录
+   DEBUG: 2026-07-10 22:51:47,109:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,109:      pdf_renderer.py:  470: printSegment: 产出
+   DEBUG: 2026-07-10 22:51:47,110:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,110:      pdf_renderer.py:  470: printSegment: （成果） |
+   DEBUG: 2026-07-10 22:51:47,111:      pdf_renderer.py:  470: printSegment: 六、结论：差异本质
+   DEBUG: 2026-07-10 22:51:47,112:      pdf_renderer.py:  470: printSegment: social-agent 不是
+   DEBUG: 2026-07-10 22:51:47,112:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,112:      pdf_renderer.py:  470: printSegment: 更好的个人 CRM
+   DEBUG: 2026-07-10 22:51:47,113:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,113:      pdf_renderer.py:  470: printSegment: ，而是一个不同物种。
+   DEBUG: 2026-07-10 22:51:47,114:      pdf_renderer.py:  470: printSegment: | 心智模型 | 个人 CRM | social-agent |
+   DEBUG: 2026-07-10 22:51:47,114:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,115:      pdf_renderer.py:  470: printSegment: |:----|:----|:----|
+   DEBUG: 2026-07-10 22:51:47,115:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,116:      pdf_renderer.py:  470: printSegment: | 隐喻 | 通讯录++（记住更多人） | 
+   DEBUG: 2026-07-10 22:51:47,116:      pdf_renderer.py:  470: printSegment: 参谋（帮你想清楚经营谁、为什么、怎么经营）
+   DEBUG: 2026-07-10 22:51:47,117:      pdf_renderer.py:  470: printSegment:  |
+   DEBUG: 2026-07-10 22:51:47,117:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,117:      pdf_renderer.py:  470: printSegment: | 核心问题 | 
+   DEBUG: 2026-07-10 22:51:47,118:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,118:      pdf_renderer.py:  470: printSegment: 上次聊了什么
+   DEBUG: 2026-07-10 22:51:47,119:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,119:      pdf_renderer.py:  470: printSegment:  | 
+   DEBUG: 2026-07-10 22:51:47,120:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,120:      pdf_renderer.py:  470: printSegment: 这个人对我哪个目标有贡献，怎么经营
+   DEBUG: 2026-07-10 22:51:47,120:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,121:      pdf_renderer.py:  470: printSegment:  |
+   DEBUG: 2026-07-10 22:51:47,121:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,122:      pdf_renderer.py:  470: printSegment: | 价值主张 | 
+   DEBUG: 2026-07-10 22:51:47,122:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,123:      pdf_renderer.py:  470: printSegment: 不忘掉重要的人
+   DEBUG: 2026-07-10 22:51:47,123:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,124:      pdf_renderer.py:  470: printSegment:  | 
+   DEBUG: 2026-07-10 22:51:47,124:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,125:      pdf_renderer.py:  470: printSegment: 把人脉投入对准人生目标，并追踪兑现
+   DEBUG: 2026-07-10 22:51:47,125:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,125:      pdf_renderer.py:  470: printSegment:  |
+   DEBUG: 2026-07-10 22:51:47,126:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,126:      pdf_renderer.py:  470: printSegment: | 终极指标 | 互动频率 / 联系覆盖率 | 
+   DEBUG: 2026-07-10 22:51:47,127:      pdf_renderer.py:  470: printSegment: 目标维度的人脉兑现率
+   DEBUG: 2026-07-10 22:51:47,127:      pdf_renderer.py:  470: printSegment:  |
+   DEBUG: 2026-07-10 22:51:47,128:      pdf_renderer.py:  470: printSegment: 三个竞品完全没有、social-agent 独有的功能
+   DEBUG: 2026-07-10 22:51:47,128:      pdf_renderer.py:  470: printSegment:  1 
+   DEBUG: 2026-07-10 22:51:47,129:      pdf_renderer.py:  470: printSegment: leverage 锚定
+   DEBUG: 2026-07-10 22:51:47,129:      pdf_renderer.py:  470: printSegment: ——关系 → 目标映射（SPEC v4 §18）
+   DEBUG: 2026-07-10 22:51:47,130:      pdf_renderer.py:  470: printSegment:  2 
+   DEBUG: 2026-07-10 22:51:47,130:      pdf_renderer.py:  470: printSegment: advise 三元组
+   DEBUG: 2026-07-10 22:51:47,131:      pdf_renderer.py:  470: printSegment: ——联系谁 + 为什么 + 聊什么（SPEC v4 §19）
+   DEBUG: 2026-07-10 22:51:47,131:      pdf_renderer.py:  470: printSegment:  3 
+   DEBUG: 2026-07-10 22:51:47,132:      pdf_renderer.py:  470: printSegment: outcome 追踪
+   DEBUG: 2026-07-10 22:51:47,132:      pdf_renderer.py:  470: printSegment: ——人脉投入的成果闭环（SPEC v4 §20）
+   DEBUG: 2026-07-10 22:51:47,133:      pdf_renderer.py:  470: printSegment: 三个所有产品都有、social-agent 反而最弱的
+   DEBUG: 2026-07-10 22:51:47,133:      pdf_renderer.py:  470: printSegment:  1 
+   DEBUG: 2026-07-10 22:51:47,134:      pdf_renderer.py:  470: printSegment: 数据采集
+   DEBUG: 2026-07-10 22:51:47,134:      pdf_renderer.py:  470: printSegment: ——Clay 自动同步 vs social-agent 全手动（timeline 真空是证据）
+   DEBUG: 2026-07-10 22:51:47,135:      pdf_renderer.py:  470: printSegment:  2 
+   DEBUG: 2026-07-10 22:51:47,135:      pdf_renderer.py:  470: printSegment: GUI 体验
+   DEBUG: 2026-07-10 22:51:47,135:      pdf_renderer.py:  470: printSegment: ——Clay/Dex 精美 App vs social-agent CLI
+   DEBUG: 2026-07-10 22:51:47,135:      pdf_renderer.py:  470: printSegment:  3 
+   DEBUG: 2026-07-10 22:51:47,136:      pdf_renderer.py:  470: printSegment: 移动端
+   DEBUG: 2026-07-10 22:51:47,136:      pdf_renderer.py:  470: printSegment: ——所有竞品有 App vs social-agent 无
+   DEBUG: 2026-07-10 22:51:47,136:      pdf_renderer.py:  470: printSegment: 一句话总结
+   DEBUG: 2026-07-10 22:51:47,137:      pdf_renderer.py:  470: printSegment: social-agent 在
+   DEBUG: 2026-07-10 22:51:47,137:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,137:      pdf_renderer.py:  470: printSegment: 想清楚
+   DEBUG: 2026-07-10 22:51:47,137:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,138:      pdf_renderer.py:  470: printSegment: 层面领先所有竞品 2-3 个代际（目标锚定 + 策略建议 + 兑现追踪），但在
+   DEBUG: 2026-07-10 22:51:47,138:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,138:      pdf_renderer.py:  470: printSegment: 动起来
+   DEBUG: 2026-07-10 22:51:47,138:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,139:      pdf_renderer.py:  470: printSegment: 层面落后 Clay 一个代际（数据采集摩擦）。这正是 v5.0 要补的课——不是追赶 Clay 的自动同步，而是用
+   DEBUG: 2026-07-10 22:51:47,139:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,139:      pdf_renderer.py:  470: printSegment: 轻量记录 + 信号推断
+   DEBUG: 2026-07-10 22:51:47,140:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,140:      pdf_renderer.py:  470: printSegment: 走第三条路。
+   DEBUG: 2026-07-10 22:51:47,140:      pdf_renderer.py:  470: printSegment: 七、对 v5.0 演进的产品决策启示
+   DEBUG: 2026-07-10 22:51:47,141:      pdf_renderer.py:  470: printSegment: 基于竞品调研，v5.0 的三个支柱有明确的市场对标：
+   DEBUG: 2026-07-10 22:51:47,141:      pdf_renderer.py:  470: printSegment: | v5.0 支柱 | 对标竞品 | 差异化策略 |
+   DEBUG: 2026-07-10 22:51:47,141:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,142:      pdf_renderer.py:  470: printSegment: |:----|:----|:----|
+   DEBUG: 2026-07-10 22:51:47,142:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,142:      pdf_renderer.py:  470: printSegment: | 
+   DEBUG: 2026-07-10 22:51:47,143:      pdf_renderer.py:  470: printSegment: 轻量记录（touch 类型 + log 简化）
+   DEBUG: 2026-07-10 22:51:47,143:      pdf_renderer.py:  470: printSegment:  | Keep 的语音 / Clay 的自动同步 | 不走自动同步（中国不可用），不走语音（CLI 无麦克风），走
+   DEBUG: 2026-07-10 22:51:47,143:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,143:      pdf_renderer.py:  470: printSegment: 极低摩擦键盘输入
+   DEBUG: 2026-07-10 22:51:47,144:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,144:      pdf_renderer.py:  470: printSegment:  |
+   DEBUG: 2026-07-10 22:51:47,144:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,145:      pdf_renderer.py:  470: printSegment: | 
+   DEBUG: 2026-07-10 22:51:47,145:      pdf_renderer.py:  470: printSegment: 信号推断（infer 引擎）
+   DEBUG: 2026-07-10 22:51:47,145:      pdf_renderer.py:  470: printSegment:  | Clay 的自动 enrichment | Clay 推断的是
+   DEBUG: 2026-07-10 22:51:47,146:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,146:      pdf_renderer.py:  470: printSegment: 对方信息
+   DEBUG: 2026-07-10 22:51:47,146:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,146:      pdf_renderer.py:  470: printSegment: （职位/公司），social-agent 推断的是
+   DEBUG: 2026-07-10 22:51:47,147:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,147:      pdf_renderer.py:  470: printSegment: 互动模式
+   DEBUG: 2026-07-10 22:51:47,147:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,148:      pdf_renderer.py:  470: printSegment: （可能的经营节奏） |
+   DEBUG: 2026-07-10 22:51:47,148:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,148:      pdf_renderer.py:  470: printSegment: | 
+   DEBUG: 2026-07-10 22:51:47,149:      pdf_renderer.py:  470: printSegment: 执行闭环（review + advice-id）
+   DEBUG: 2026-07-10 22:51:47,149:      pdf_renderer.py:  470: printSegment:  | 无竞品 | 独创——所有竞品都没有
+   DEBUG: 2026-07-10 22:51:47,149:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,149:      pdf_renderer.py:  470: printSegment: 建议 → 执行 → 反馈
+   DEBUG: 2026-07-10 22:51:47,150:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,150:      pdf_renderer.py:  470: printSegment: 闭环 |
+   DEBUG: 2026-07-10 22:51:47,150:      pdf_renderer.py:  470: printSegment: v5.0 不做的事（基于竞品调研确认）
+   DEBUG: 2026-07-10 22:51:47,151:      pdf_renderer.py:  470: printSegment: ：
+   DEBUG: 2026-07-10 22:51:47,151:      pdf_renderer.py:  470: printSegment: | 不做 | 理由 |
+   DEBUG: 2026-07-10 22:51:47,151:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,152:      pdf_renderer.py:  470: printSegment: |:----|:----|
+   DEBUG: 2026-07-10 22:51:47,152:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,152:      pdf_renderer.py:  470: printSegment: | GUI/App | Clay/Dex/脉客已充分覆盖 GUI 市场；social-agent 的 CLI 是数据主权定位的体现，不是缺陷 |
+   DEBUG: 2026-07-10 22:51:47,153:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,153:      pdf_renderer.py:  470: printSegment: | Gmail/LinkedIn 自动同步 | 中国生态不可用；且自动同步与
+   DEBUG: 2026-07-10 22:51:47,153:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,154:      pdf_renderer.py:  470: printSegment: 显式确认
+   DEBUG: 2026-07-10 22:51:47,154:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,154:      pdf_renderer.py:  470: printSegment: 原则（原则二）冲突 |
+   DEBUG: 2026-07-10 22:51:47,155:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,155:      pdf_renderer.py:  470: printSegment: | 关系图谱可视化 | Dex 的关系图谱被评测为
+   DEBUG: 2026-07-10 22:51:47,155:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,156:      pdf_renderer.py:  470: printSegment: barely
+   DEBUG: 2026-07-10 22:51:47,156:      pdf_renderer.py:  470: printSegment: readable at scale
+   DEBUG: 2026-07-10 22:51:47,156:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,157:      pdf_renderer.py:  470: printSegment: ；数据真空下无意义 |
+   DEBUG: 2026-07-10 22:51:47,157:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,157:      pdf_renderer.py:  470: printSegment: | 语音输入 | Keep 已做且仅 iOS；CLI 场景下键盘输入更快 |
+   DEBUG: 2026-07-10 22:51:47,158:      pdf_renderer.py:  470: printSegment: 附录：调研数据源
+   DEBUG: 2026-07-10 22:51:47,158:      pdf_renderer.py:  470: printSegment: | 来源 | 类型 | 覆盖产品 |
+   DEBUG: 2026-07-10 22:51:47,159:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,159:      pdf_renderer.py:  470: printSegment: |:----|:----|:----|
+   DEBUG: 2026-07-10 22:51:47,159:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,160:      pdf_renderer.py:  470: printSegment: | App Store / 产品官网 | 一手 | 脉客、人脉清单、钛合金人脉、Clay、Dex、Monica、Norrie、Keep、Yenesow、Orbit、Dayze |
+   DEBUG: 2026-07-10 22:51:47,160:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,161:      pdf_renderer.py:  470: printSegment: | OpenLoop 2026 个人 CRM 对比 | 三方评测 |
+   DEBUG: 2026-07-10 22:51:47,161:      pdf_renderer.py:  470: printSegment: Clay、Dex、Covve、OpenLoop 分层对比 |
+   DEBUG: 2026-07-10 22:51:47,161:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,162:      pdf_renderer.py:  470: printSegment: | Storyflow 2026 Top 12 | 三方评测 | Dex、Clay、Monica、Cloze、Storyflow、folk、Attio、Streak |
+   DEBUG: 2026-07-10 22:51:47,162:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,163:      pdf_renderer.py:  470: printSegment: | Intriq Clay vs Dex 对比 | 三方评测 |
+   DEBUG: 2026-07-10 22:51:47,163:      pdf_renderer.py:  470: printSegment: Clay、Dex |
+   DEBUG: 2026-07-10 22:51:47,164:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,164:      pdf_renderer.py:  470: printSegment: | Use Apify Clay Review 2026 | 深度评测 | Clay/Mesh |
+   DEBUG: 2026-07-10 22:51:47,164:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,165:      pdf_renderer.py:  470: printSegment: | TheUnhacked Dex Review | 深度评测 | Dex |
+   DEBUG: 2026-07-10 22:51:47,165:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,166:      pdf_renderer.py:  470: printSegment: | Zoho CRM 用户调研 | 用户反馈 | 企业 CRM
+   DEBUG: 2026-07-10 22:51:47,166:      pdf_renderer.py:  470: printSegment: 降维产品 |
+   DEBUG: 2026-07-10 22:51:47,166:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,167:      pdf_renderer.py:  470: printSegment: | 范凯说AI 会员直播 | 用户洞察 | 个人 CRM 痛点（Excel/微信通讯录） |
+   DEBUG: 2026-07-10 22:51:47,167:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,167:      pdf_renderer.py:  470: printSegment: | askcruit 个人 CRM 指南 | 方法论 | 
+   DEBUG: 2026-07-10 22:51:47,168:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,168:      pdf_renderer.py:  470: printSegment: Track Goals Not Dates
+   DEBUG: 2026-07-10 22:51:47,169:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-07-10 22:51:47,169:      pdf_renderer.py:  470: printSegment: 理念 |
+   DEBUG: 2026-07-10 22:51:47,169:      pdf_renderer.py:  470: printSegment: 最后更新
+   DEBUG: 2026-07-10 22:51:47,170:      pdf_renderer.py:  470: printSegment: ：2026-07-10
+   DEBUG: 2026-07-10 22:51:47,170:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,171:      pdf_renderer.py:  470: printSegment: 适用版本
+   DEBUG: 2026-07-10 22:51:47,171:      pdf_renderer.py:  470: printSegment: ：social-agent v4.0（阶段1-5 全部落地）
+   DEBUG: 2026-07-10 22:51:47,171:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-07-10 22:51:47,172:      pdf_renderer.py:  470: printSegment: 下一步
+   DEBUG: 2026-07-10 22:51:47,172:      pdf_renderer.py:  470: printSegment: ：v5.0 规约（基于本文档产品决策启示）
+   DEBUG: 2026-07-10 22:51:47,172:      pdf_renderer.py:   53: 0, [2, 'title: social-agent 竞品深度研究：差异、定位与痛点', 1, 98.8]
+   DEBUG: 2026-07-10 22:51:47,172:      pdf_renderer.py:   53: 1, [1, 'social-agent 竞品深度研究', 1, 132.79999999999998]
+   DEBUG: 2026-07-10 22:51:47,172:      pdf_renderer.py:   53: 2, [2, '一、市场全景：四个赛道，同一痛点', 1, 206.79999999999998]
+   DEBUG: 2026-07-10 22:51:47,172:      pdf_renderer.py:   53: 3, [3, '赛道 A：社交平台（微信 / LinkedIn / 朋友圈）', 1, 258.0]
+   DEBUG: 2026-07-10 22:51:47,173:      pdf_renderer.py:   53: 4, [3, '赛道 B：个人 CRM（Clay / Dex / Monica / Norrie / Keep / 脉客）', 1, 334.79999999999995]
+   DEBUG: 2026-07-10 22:51:47,173:      pdf_renderer.py:   53: 5, [3, '赛道 C：企业 CRM 降维（Salesforce / HubSpot / Zoho 个人版）', 1, 519.5999999999999]
+   DEBUG: 2026-07-10 22:51:47,173:      pdf_renderer.py:   53: 6, [3, '赛道 D：AI 对话辅助（Convo / Qubi / Diggsi）', 1, 602.3999999999999]
+   DEBUG: 2026-07-10 22:51:47,173:      pdf_renderer.py:   53: 7, [2, '二、social-agent 的定位差异：五个独有维度', 1, 679.5999999999998]
+   DEBUG: 2026-07-10 22:51:47,173:      pdf_renderer.py:   53: 8, [3, '差异 1：目标锚定——从', 2, 72.0]
+   DEBUG: 2026-07-10 22:51:47,173:      pdf_renderer.py:   53: 9, [3, '差异 2：社交价值理论——从', 2, 166.8]
+   DEBUG: 2026-07-10 22:51:47,173:      pdf_renderer.py:   53: 10, [3, '差异 3：建议引擎——从', 2, 231.60000000000002]
+   DEBUG: 2026-07-10 22:51:47,173:      pdf_renderer.py:   53: 11, [3, '差异 4：兑现追踪——从', 2, 308.4]
+   DEBUG: 2026-07-10 22:51:47,173:      pdf_renderer.py:   53: 12, [3, '差异 5：本地优先 + CLI 原生——从', 2, 373.19999999999993]
+   DEBUG: 2026-07-10 22:51:47,173:      pdf_renderer.py:   53: 13, [2, '三、定位矩阵', 2, 462.3999999999999]
+   DEBUG: 2026-07-10 22:51:47,173:      pdf_renderer.py:   53: 14, [2, '四、痛点诊断：三层痛点', 3, 128.8]
+   DEBUG: 2026-07-10 22:51:47,173:      pdf_renderer.py:   53: 15, [3, '第一层：现有产品共同痛点（赛道级）', 3, 162.00000000000003]
+   DEBUG: 2026-07-10 22:51:47,173:      pdf_renderer.py:   53: 16, [3, '第二层：social-agent 独有痛点（自身诊断）', 3, 232.80000000000004]
+   DEBUG: 2026-07-10 22:51:47,173:      pdf_renderer.py:   53: 17, [3, '第三层：用户（陈颖芳）特有痛点', 3, 303.6]
+   DEBUG: 2026-07-10 22:51:47,173:      pdf_renderer.py:   53: 18, [2, '五、功能矩阵对比', 3, 362.8]
+   DEBUG: 2026-07-10 22:51:47,173:      pdf_renderer.py:   53: 19, [3, '5.1 核心功能对比', 3, 396.0]
+   DEBUG: 2026-07-10 22:51:47,173:      pdf_renderer.py:   53: 20, [3, '5.2 独有功能详表', 3, 478.79999999999995]
+   DEBUG: 2026-07-10 22:51:47,173:      pdf_renderer.py:   53: 21, [2, '六、结论：差异本质', 3, 549.9999999999999]
+   DEBUG: 2026-07-10 22:51:47,173:      pdf_renderer.py:   53: 22, [3, '三个竞品完全没有、social-agent 独有的功能', 3, 619.1999999999998]
+   DEBUG: 2026-07-10 22:51:47,173:      pdf_renderer.py:   53: 23, [3, '三个所有产品都有、social-agent 反而最弱的', 3, 695.9999999999998]
+   DEBUG: 2026-07-10 22:51:47,173:      pdf_renderer.py:   53: 24, [3, '一句话总结', 4, 134.4]
+   DEBUG: 2026-07-10 22:51:47,173:      pdf_renderer.py:   53: 25, [2, '七、对 v5.0 演进的产品决策启示', 4, 193.60000000000002]
+   DEBUG: 2026-07-10 22:51:47,173:      pdf_renderer.py:   53: 26, [2, '附录：调研数据源', 4, 335.20000000000005]
+   ERROR: 2026-07-10 22:51:47,173:      pdf_renderer.py:   57: Bad heading level.  More information:
+Traceback (most recent call last):
+  File "/Users/cyingfang/Library/Python/3.9/lib/python/site-packages/mdpdf/pdf_renderer.py", line 55, in __del__
+    self.doc.set_toc(self.toc)
+  File "/Users/cyingfang/Library/Python/3.9/lib/python/site-packages/pymupdf/__init__.py", line 7143, in set_toc
+    raise ValueError("hierarchy level of item 0 must be 1")
+ValueError: hierarchy level of item 0 must be 1
+    INFO: 2026-07-10 22:51:47,175:      pdf_renderer.py:   59: [1, 'social-agent 竞品深度研究', 1, 132.79999999999998]

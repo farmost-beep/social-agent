@@ -3,7 +3,7 @@
 > 本地运行的AI管家，自动追踪所有社交关系中「最近干了什么」和「下一步该干什么」。
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-4.0.0-blue.svg)](docs/CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-4.0.1-blue.svg)](docs/CHANGELOG.md)
 
 ## 安装
 
