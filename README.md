@@ -7,10 +7,27 @@
 
 ## 安装
 
+**pip（推荐）**
+
 ```bash
 pip install -e .
+```
 
-# 设置 API Key（三选一）
+**npm**
+
+```bash
+npx @farmost/social-agent status
+```
+
+**一键脚本**
+
+```bash
+bash <(curl -sL https://raw.githubusercontent.com/farmost-beep/social-agent/main/install.sh)
+```
+
+安装后设置 API Key（三选一）：
+
+```bash
 export ANTHROPIC_API_KEY=sk-ant-...                    # Claude（默认）
 export OPENAI_API_KEY=sk-...                           # OpenAI
 export OPENAI_API_KEY=... OPENAI_BASE_URL=https://api.minimaxi.com/v1  # MiniMax
