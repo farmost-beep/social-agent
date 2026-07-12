@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>社交关系AI管家 — 本地运行的关系经营参谋</title>
+<meta name="description" content="本地运行的AI管家，自动追踪所有社交关系中「最近干了什么」和「下一步该干什么」。目标锚定·建议引擎·兑现追踪，开源免费。">
+<style>
+:root {
+  --primary: #4f46e5;
+  --primary-light: #818cf8;
+  --primary-dark: #3730a3;
+  --accent: #f59e0b;
+  --bg: #0f172a;
+  --bg-card: #1e293b;
+  --bg-light: #f8fafc;
+  --text: #1e293b;
+  --text-light: #64748b;
+  --text-white: #f1f5f9;
+  --text-white-light: #94a3b8;
+  --border: #e2e8f0;
+  --green: #10b981;
+  --red: #ef4444;
+  --yellow: #f59e0b;
+  --radius: 12px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  color: var(--text);
+  line-height: 1.7;
+  background: var(--bg-light);
+}
+a { color: var(--primary); text-decoration: none; }
+a:hover { text-decoration: underline; }
+code {
+  font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace;
+  background: #eef2ff;
+  color: var(--primary-dark);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+pre {
+  background: var(--bg);
+  color: var(--text-white);
+  padding: 16px 20px;
+  border-radius: var(--radius);
+  overflow-x: auto;
+  font-size: 0.85em;
+  line-height: 1.5;
+}
+pre code { background: none; color: inherit; padding: 0; }
+
+/* Hero */
+.hero {
+  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%);
+  color: var(--text-white);
+  padding: 80px 20px 100px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: radial-gradient(circle at 30% 50%, rgba(79,70,229,0.15) 0%, transparent 50%),
+              radial-gradient(circle at 70% 50%, rgba(245,158,11,0.08) 0%, transparent 50%);
+  animation: drift 20s ease-in-out infinite alternate;
+}
+@keyframes drift { to { transform: translate(5%, 5%); } }
+.hero-content { position: relative; max-width: 800px; margin: 0 auto; }
+.hero h1 { font-size: 2.8em; font-weight: 800; margin-bottom: 16px; letter-spacing: -0.02em; }
+.hero .tagline { font-size: 1.3em; color: var(--text-white-light); margin-bottom: 12px; }
+.hero .subtitle { font-size: 1.05em; color: var(--primary-light); margin-bottom: 36px; }
+.hero-badges { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 36px; }
+.badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);
+  padding: 6px 14px; border-radius: 20px; font-size: 0.85em; color: var(--text-white);
+}
+.badge svg { width: 14px; height: 14px; }
+.hero-cta { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+.btn {
+  display: inline-block; padding: 14px 32px; border-radius: var(--radius);
+  font-weight: 600; font-size: 1.05em; transition: all 0.2s; cursor: pointer; border: none;
+}
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover { background: var(--primary-dark); text-decoration: none; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(79,70,229,0.3); }
+.btn-secondary { background: rgba(255,255,255,0.1); color: var(--text-white); border: 1px solid rgba(255,255,255,0.2); }
+.btn-secondary:hover { background: rgba(255,255,255,0.15); text-decoration: none; }
+
+/* Sections */
+section { padding: 80px 20px; max-width: 1000px; margin: 0 auto; }
+section h2 { font-size: 2em; font-weight: 700; margin-bottom: 12px; text-align: center; }
+section .section-sub { text-align: center; color: var(--text-light); font-size: 1.1em; margin-bottom: 48px; }
+
+/* Problem */
+.problem { background: white; }
+.problem-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+.problem-card {
+  background: var(--bg-light); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 28px; text-align: center;
+}
+.problem-card .icon { font-size: 2.5em; margin-bottom: 12px; }
+.problem-card h3 { font-size: 1.15em; margin-bottom: 8px; }
+.problem-card p { color: var(--text-light); font-size: 0.95em; }
+
+/* Features */
+.features { background: white; }
+.feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 28px; }
+.feature-card {
+  background: white; border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 32px;
+  transition: all 0.2s;
+}
+.feature-card:hover { border-color: var(--primary-light); box-shadow: 0 8px 32px rgba(79,70,229,0.08); transform: translateY(-4px); }
+.feature-card .num { font-size: 2.5em; font-weight: 800; color: var(--primary); opacity: 0.15; line-height: 1; margin-bottom: 8px; }
+.feature-card h3 { font-size: 1.25em; margin-bottom: 8px; color: var(--text); }
+.feature-card .desc { color: var(--text-light); margin-bottom: 16px; font-size: 0.95em; }
+.feature-card ul { list-style: none; padding: 0; }
+.feature-card li { padding: 4px 0; font-size: 0.9em; color: var(--text-light); }
+.feature-card li::before { content: '✓ '; color: var(--green); font-weight: bold; }
+
+/* Comparison */
+.comparison { background: var(--bg-light); }
+.compare-table { width: 100%; border-collapse: collapse; background: white; border-radius: var(--radius); overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+.compare-table th, .compare-table td { padding: 14px 20px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.9em; }
+.compare-table th { background: var(--bg); color: var(--text-white); font-weight: 600; }
+.compare-table th:first-child { width: 22%; }
+.compare-table .yes { color: var(--green); font-weight: 600; }
+.compare-table .no { color: var(--text-white-light); }
+.compare-table .partial { color: var(--yellow); }
+.compare-table tr:hover { background: #f8fafc; }
+.compare-table .highlight { background: #eef2ff; }
+
+/* Demo */
+.demo { background: white; }
+.demo-chat { max-width: 680px; margin: 0 auto; background: var(--bg-light); border-radius: var(--radius); padding: 32px; border: 1px solid var(--border); }
+.chat-msg { margin-bottom: 20px; }
+.chat-msg .role { font-size: 0.8em; font-weight: 600; margin-bottom: 4px; }
+.chat-msg .role.you { color: var(--primary); }
+.chat-msg .role.ai { color: var(--green); }
+.chat-msg .bubble { padding: 14px 18px; border-radius: 12px; font-size: 0.92em; line-height: 1.6; }
+.chat-msg .bubble.you { background: #eef2ff; border-left: 3px solid var(--primary); }
+.chat-msg .bubble.ai { background: #ecfdf5; border-left: 3px solid var(--green); white-space: pre-wrap; }
+
+/* Install */
+.install { background: var(--bg); color: var(--text-white); }
+.install h2 { color: var(--text-white); }
+.install .section-sub { color: var(--text-white-light); }
+.install-tabs { max-width: 680px; margin: 0 auto; }
+.install-tab { margin-bottom: 24px; }
+.install-tab h3 { color: var(--primary-light); margin-bottom: 12px; font-size: 1.1em; }
+
+/* Architecture */
+.arch { background: white; }
+.arch-diagram { max-width: 700px; margin: 0 auto; text-align: center; }
+.arch-box { display: inline-block; background: var(--bg-light); border: 2px solid var(--primary); border-radius: var(--radius); padding: 16px 24px; margin: 8px; font-weight: 600; }
+.arch-arrow { font-size: 1.5em; color: var(--primary-light); margin: 4px 0; }
+.arch-layer { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin: 12px 0; }
+.arch-layer .arch-box { font-size: 0.85em; padding: 10px 16px; }
+
+/* Stats */
+.stats { background: linear-gradient(135deg, #1e1b4b, #312e81); color: white; padding: 60px 20px; }
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 32px; max-width: 900px; margin: 0 auto; text-align: center; }
+.stat .num { font-size: 2.5em; font-weight: 800; color: var(--primary-light); }
+.stat .label { font-size: 0.9em; color: var(--text-white-light); margin-top: 4px; }
+
+/* Footer */
+footer { background: var(--bg); color: var(--text-white-light); padding: 40px 20px; text-align: center; font-size: 0.9em; }
+footer a { color: var(--primary-light); }
+footer .links { margin: 16px 0; }
+footer .links a { margin: 0 12px; }
+
+/* Responsive */
+@media (max-width: 640px) {
+  .hero h1 { font-size: 2em; }
+  .hero .tagline { font-size: 1.1em; }
+  section { padding: 60px 16px; }
+  section h2 { font-size: 1.6em; }
+  .compare-table { font-size: 0.8em; }
+  .compare-table th, .compare-table td { padding: 10px 12px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-content">
+    <h1>社交关系AI管家</h1>
+    <p class="tagline">本地运行的关系经营参谋</p>
+    <p class="subtitle">自动追踪所有社交关系中「最近干了什么」和「下一步该干什么」</p>
+    <div class="hero-badges">
+      <span class="badge">⬇ pip install social-agent</span>
+      <span class="badge">🔧 v4.0.3</span>
+      <span class="badge">📜 MIT 开源</span>
+      <span class="badge">💻 本地优先</span>
+    </div>
+    <div class="hero-cta">
+      <a href="#install" class="btn btn-primary">快速开始</a>
+      <a href="https://github.com/farmost-beep/social-agent" class="btn btn-secondary">GitHub 源码</a>
+    </div>
+  </div>
+</div>
+
+<!-- Problem -->
+<section class="problem">
+  <h2>4683 个联系人，你记得几个？</h2>
+  <p class="section-sub">微信存得下，用不起来。问题不在"连接"，在"经营"。</p>
+  <div class="problem-grid">
+    <div class="problem-card">
+      <div class="icon">📱</div>
+      <h3>通讯录是平的</h3>
+      <p>4683 人平铺，没有分层、没有强度、没有"该联系谁"的判断。找不到该经营的人。</p>
+    </div>
+    <div class="problem-card">
+      <div class="icon">🧠</div>
+      <h3>记不住上次聊了什么</h3>
+      <p>三个月前见过的人，完全想不起来聊了什么、有什么待办。每次从零开始。</p>
+    </div>
+    <div class="problem-card">
+      <div class="icon">❓</div>
+      <h3>不知道下一步该干什么</h3>
+      <p>知道"该联系了"，但不知道"为什么联系"和"聊什么"。提醒 ≠ 策略。</p>
+    </div>
+    <div class="problem-card">
+      <div class="icon">🔒</div>
+      <h3>数据不在自己手里</h3>
+      <p>SaaS CRM 把你的关系数据存在云端。你的人际关系，为什么要交给第三方？</p>
+    </div>
+  </div>
+</section>
+
+<!-- Features -->
+<section class="features">
+  <h2>三个承诺，一个参谋</h2>
+  <p class="section-sub">不是温度计（告诉你谁凉了），是参谋（告诉你联系谁、为什么、聊什么）</p>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="num">01</div>
+      <h3>记得住</h3>
+      <p class="desc">自动记录每次互动，提取待办，建立完整时间线。</p>
+      <ul>
+        <li>自然语言记录："记一下：和张总聊了项目进展"</li>
+        <li>自动提取待办（P0/P1/P2 优先级）</li>
+        <li>互动时间线，上次聊了什么一查便知</li>
+        <li>本地 JSON 存储，不上云</li>
+      </ul>
+    </div>
+    <div class="feature-card">
+      <div class="num">02</div>
+      <h3>想得到</h3>
+      <p class="desc">不是"3个月没联系了"的提醒，是"联系谁+为什么+聊什么"的三元组策略建议。</p>
+      <ul>
+        <li>五信号源打分：冷却状态、生日、目标锚定、待办、强度</li>
+        <li>每周 3-5 条封顶（聚焦，不轰炸）</li>
+        <li>每条建议附具体话题，不是"该问候了"</li>
+        <li>一键拟稿：<code>social draft</code> 生成消息草稿</li>
+      </ul>
+    </div>
+    <div class="feature-card">
+      <div class="num">03</div>
+      <h3>对得上</h3>
+      <p class="desc">每段关系锚定到你的人生目标。经营人脉不是社交，是目标达成路径。</p>
+      <ul>
+        <li>六维目标框架：事业/投资/家庭/健康/AI能力/知识</li>
+        <li>每个联系人标注 leverage（撬动哪个目标、怎么撬）</li>
+        <li>兑现追踪：记录互动产出的实际成果</li>
+        <li>关系强度 = 目标贡献度，不是互动频率</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- Comparison -->
+<section class="comparison">
+  <h2>和市面上的 CRM 有什么不同？</h2>
+  <p class="section-sub">差异不在功能，在哲学。从"记住谁"到"为什么经营"。</p>
+  <table class="compare-table">
+    <thead>
+      <tr>
+        <th>维度</th>
+        <th>Clay / Dex</th>
+        <th>Monica</th>
+        <th>微信/LinkedIn</th>
+        <th class="highlight">社交关系AI管家</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>关系强度定义</td>
+        <td>互动频率</td>
+        <td>手动标签</td>
+        <td>无</td>
+        <td class="highlight"><strong>目标贡献度</strong></td>
+      </tr>
+      <tr>
+        <td>建议类型</td>
+        <td>"该联系了"</td>
+        <td>无</td>
+        <td>无</td>
+        <td class="highlight"><strong>"联系谁+为什么+聊什么"</strong></td>
+      </tr>
+      <tr>
+        <td>目标锚定</td>
+        <td class="no">✗</td>
+        <td class="no">✗</td>
+        <td class="no">✗</td>
+        <td class="highlight yes">✓ 六维目标映射</td>
+      </tr>
+      <tr>
+        <td>兑现追踪</td>
+        <td class="no">✗</td>
+        <td class="no">✗</td>
+        <td class="no">✗</td>
+        <td class="highlight yes">✓ outcome 记录</td>
+      </tr>
+      <tr>
+        <td>数据存储</td>
+        <td>云端</td>
+        <td>云端/自托管</td>
+        <td>平台持有</td>
+        <td class="highlight"><strong>本地 JSON</strong></td>
+      </tr>
+      <tr>
+        <td>中国生态适配</td>
+        <td class="no">✗ (依赖 Gmail/LinkedIn)</td>
+        <td class="partial">△</td>
+        <td class="partial">△ (仅微信)</td>
+        <td class="highlight yes">✓ 微信推送</td>
+      </tr>
+      <tr>
+        <td>价格</td>
+        <td>$120-144/年</td>
+        <td>$90/年</td>
+        <td>免费</td>
+        <td class="highlight"><strong>开源免费</strong></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- Demo -->
+<section class="demo">
+  <h2>在微信里直接用</h2>
+  <p class="section-sub">自然语言交互，不需要学命令。发消息就是操作。</p>
+  <div class="demo-chat">
+    <div class="chat-msg">
+      <div class="role you">你</div>
+      <div class="bubble you">记一下：昨天和老王吃饭，聊了行业峰会合作的事，他说下周引荐峰会主办方给我</div>
+    </div>
+    <div class="chat-msg">
+      <div class="role ai">AI 管家</div>
+      <div class="bubble ai">✓ 已记录
+  联系人：王明（老王）
+  时间：2026-07-11
+  摘要：行业峰会合作交流，引荐主办方
+  待办已提取：
+    🔴 P0 老王引荐峰会主办方（等他安排）</div>
+    </div>
+    <div class="chat-msg">
+      <div class="role you">你</div>
+      <div class="bubble you">最近该联系谁</div>
+    </div>
+    <div class="chat-msg">
+      <div class="role ai">AI 管家</div>
+      <div class="bubble ai">💡 本周建议联系（3人）
+
+  🔴 张总 — 21天未联系（上次：项目进展沟通）
+     建议聊：新季度预算方案是否需要调整
+  🟡 李总 — 18天未联系（上次：合作洽谈）
+     建议聊：上次提到的技术方案已出，可同步
+  🟡 赵总 — 16天未联系（上次：行业活动碰面）
+     建议聊：Q3合作框架可以推进了</div>
+    </div>
+    <div class="chat-msg">
+      <div class="role you">你</div>
+      <div class="bubble you">给老王拟条消息，问下峰会主办方引荐的事</div>
+    </div>
+    <div class="chat-msg">
+      <div class="role ai">AI 管家</div>
+      <div class="bubble ai">📝 草稿（语气：亲切）
+
+  老王，上次聊的峰会主办方引荐的事，方便的话帮我问问什么时候有空？
+  不着急，你先忙，我随时配合你的时间。
+
+  发送回复"确认"即可发出，或告诉我要改哪里。</div>
+    </div>
+  </div>
+</section>
+
+<!-- Architecture -->
+<section class="arch">
+  <h2>架构</h2>
+  <p class="section-sub">本地优先，CLI 原生，微信可选集成</p>
+  <div class="arch-diagram">
+    <div class="arch-box">微信 / CLI / Cron</div>
+    <div class="arch-arrow">↓</div>
+    <div class="arch-box">social-agent 引擎</div>
+    <div class="arch-arrow">↓</div>
+    <div class="arch-layer">
+      <div class="arch-box">timeline 记录</div>
+      <div class="arch-box">advise 引擎</div>
+      <div class="arch-box">leverage 锚定</div>
+      <div class="arch-box">outcome 追踪</div>
+    </div>
+    <div class="arch-arrow">↓</div>
+    <div class="arch-layer">
+      <div class="arch-box">contacts.json</div>
+      <div class="arch-box">timeline.json</div>
+      <div class="arch-box">todos.json</div>
+    </div>
+    <div class="arch-arrow">↓</div>
+    <div class="arch-box" style="border-color: var(--accent);">本地文件 · 不上云</div>
+  </div>
+</section>
+
+<!-- Stats -->
+<div class="stats">
+  <div class="stats-grid">
+    <div class="stat"><div class="num">4,683</div><div class="label">联系人管理</div></div>
+    <div class="stat"><div class="num">318</div><div class="label">Core 经营层</div></div>
+    <div class="stat"><div class="num">201</div><div class="label">测试用例</div></div>
+    <div class="stat"><div class="num">6</div><div class="label">目标维度</div></div>
+    <div class="stat"><div class="num">0</div><div class="label">云端依赖</div></div>
+  </div>
+</div>
+
+<!-- Install -->
+<section class="install" id="install">
+  <h2>三分钟开始</h2>
+  <p class="section-sub">pip / npm / 一键脚本，任选其一</p>
+  <div class="install-tabs">
+    <div class="install-tab">
+      <h3>pip（推荐）</h3>
+      <pre><code>pip install social-agent
+
+# 查看联系人状态
+social status
+
+# 该联系谁
+social advise</code></pre>
+    </div>
+    <div class="install-tab">
+      <h3>npm</h3>
+      <pre><code>npx @farmost/social-agent status</code></pre>
+    </div>
+    <div class="install-tab">
+      <h3>一键脚本</h3>
+      <pre><code>bash <(curl -sL https://raw.githubusercontent.com/farmost-beep/social-agent/main/install.sh)</code></pre>
+    </div>
+    <div class="install-tab">
+      <h3>微信集成（可选）</h3>
+      <pre><code># 安装桥接
+npm install -g cc-connect
+cc-connect weixin setup --project my-project
+
+# 开机自启
+cc-connect daemon install</code></pre>
+    </div>
+    <div class="install-tab">
+      <h3>LLM 配置（三选一）</h3>
+      <pre><code># Claude（默认）
+export ANTHROPIC_API_KEY=sk-ant-...
+
+# OpenAI
+export LLM_ENGINE=openai
+export OPENAI_API_KEY=sk-...
+
+# MiniMax
+export LLM_ENGINE=openai
+export OPENAI_API_KEY=...
+export OPENAI_BASE_URL=https://api.minimaxi.com/v1</code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- Commands -->
+<section style="background: var(--bg-light);">
+  <h2>命令一览</h2>
+  <p class="section-sub">CLI 优先，微信自然语言等效</p>
+  <div style="max-width: 680px; margin: 0 auto;">
+    <table class="compare-table">
+      <thead>
+        <tr><th>命令</th><th>说明</th><th>微信等效</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>social status</code></td><td>联系人状态总览</td><td>"张总最近咋样"</td></tr>
+        <tr><td><code>social todos</code></td><td>待办列表</td><td>"最近有啥要跟进的"</td></tr>
+        <tr><td><code>social advise</code></td><td>该联系谁+为什么+聊什么</td><td>"最近该联系谁"</td></tr>
+        <tr><td><code>social draft -m "上下文"</code></td><td>AI 拟稿</td><td>"给张总拟条消息"</td></tr>
+        <tr><td><code>social chat "消息"</code></td><td>直接对话</td><td>直接发消息</td></tr>
+        <tr><td><code>social anchor</code></td><td>目标锚定（联系人↔六维目标）</td><td>—</td></tr>
+        <tr><td><code>social outcomes</code></td><td>兑现追踪</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="links">
+    <a href="https://github.com/farmost-beep/social-agent">GitHub</a>
+    <a href="https://github.com/farmost-beep/social-agent/blob/main/docs/SPEC_v4.md">设计规约 v4</a>
+    <a href="https://github.com/farmost-beep/social-agent/blob/main/docs/CHANGELOG.md">版本日志</a>
+    <a href="https://github.com/farmost-beep/social-agent/blob/main/docs/COMPETITIVE_ANALYSIS.md">竞品分析</a>
+  </div>
+  <p>社交关系AI管家 · MIT 开源 · 本地优先 · 数据主权归你</p>
+</footer>
+
+</body>
+</html>
