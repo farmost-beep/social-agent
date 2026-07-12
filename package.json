@@ -33,7 +33,9 @@
   },
   "scripts": {
     "postinstall": "node ./bin/postinstall.js",
-    "test": "cd tests && python3 -m unittest discover -v"
+    "test": "cd tests && python3 -m unittest discover -v",
+    "deploy": "wrangler deploy",
+    "preview": "wrangler dev"
   },
   "files": [
     "bin/",
@@ -51,5 +53,8 @@
   "engines": {
     "node": ">=16",
     "python": ">=3.9"
+  },
+  "devDependencies": {
+    "wrangler": "^4.110.0"
   }
 }
